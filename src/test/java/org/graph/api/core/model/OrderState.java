@@ -42,7 +42,7 @@ public class OrderState extends GraphState {
         this.vip = order.isVip();
     }
 
-    public void toInterruptGraph() {
+    public void toInterruptGraphCustom() {
         interrupt = true;
     }
 }

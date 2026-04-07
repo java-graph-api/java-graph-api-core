@@ -44,7 +44,7 @@ public class GraphTest {
             "rejectOrder",
             (input, state) -> {
                 state.setStatus("REJECT_INVALID");
-                state.toInterruptGraph();
+                state.toInterruptGraphCustom();
             }
     );
 
@@ -64,7 +64,7 @@ public class GraphTest {
             "outOfStock",
             (input, state) -> {
                 state.setStatus("NO_STOCK");
-                state.toInterruptGraph();
+                state.toInterruptGraphCustom();
             }
     );
 
@@ -128,7 +128,7 @@ public class GraphTest {
             "fraudReject",
             (input, state) -> {
                 state.setStatus("FRAUD_DETECTED");
-                state.toInterruptGraph();
+                state.toInterruptGraphCustom();
             }
     );
 

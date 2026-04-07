@@ -4,11 +4,10 @@ import org.graph.api.core.ExecutorStatus;
 import org.graph.api.core.GraphBuilder;
 import org.graph.api.core.SimpleState;
 import org.graph.api.core.node.ConsumerNode;
-import org.graph.api.core.node.SupplierNode;
 import org.graph.api.core.node.RunnableNode;
+import org.graph.api.core.node.SupplierNode;
 import org.graph.api.core.node.action.RunnableNodeAction;
 import org.graph.api.core.options.GraphOptions;
-import org.graph.api.core.util.GraphStateMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +41,7 @@ public class GraphMemoryTest {
                 state.setResult(state.getResult() + 1);
                 if (state.getResult() == 1) {
                     state.toSave();
-                    state.toInterruptGraph();
+                    state.toInterruptGraphCustom();
                 }
             }
     );
@@ -59,14 +58,11 @@ public class GraphMemoryTest {
 
     ConsumerNode<Integer, SimpleState> node4 = new ConsumerNode<>(
             "node4",
-            (data, state) -> state.setEvenNumber(data % 2 == 0)
-    );
-
-    RunnableNode<SimpleState> node5 = new RunnableNode<>(
-            "node5",
-            state -> {
-                state.redirect(node2);
-                state.toInterruptGraph();
+            (data, state) -> {
+                state.setEvenNumber(data % 2 == 0);
+                if (!state.isEvenNumber()) {
+                    state.toInterruptGraph();
+                }
             }
     );
 
@@ -94,7 +90,7 @@ public class GraphMemoryTest {
         assertTrue(graphMemory.get("GraphMemoryTest", state.getSessionId()).isPresent());
 
         var dataFromSave = graphMemory.get("GraphMemoryTest", state.getSessionId()).get().state();
-        GraphStateMapper.merge(dataFromSave, state);
+        GraphStatSaveMapper.merge(dataFromSave, state);
 
         assertEquals("id", state.getSessionId());
 
@@ -131,10 +127,8 @@ public class GraphMemoryTest {
                 .route(node1, node4)
                 .route(node2, node3)
                 .route(node1, node2, state -> false)
-                .route(node4, node5, state -> !state.isEvenNumber())
                 .route(node4, node3)
-                .route(node5, node6, SimpleState::isInterrupt)
-                .end(List.of(node3, node6));
+                .end(node3);
 
         SimpleState state = new SimpleState();
         state.setInput(0);
@@ -146,7 +140,7 @@ public class GraphMemoryTest {
         state.setInput(1);
         state = executor.execute(state, "id");
 
-        assertEquals(ExecutorStatus.COMPLETED, state.getExecutorStatus());
+        assertEquals(ExecutorStatus.INTERRUPT, state.getExecutorStatus());
         assertEquals(1, state.getResult());
 
         state.setInput(2);

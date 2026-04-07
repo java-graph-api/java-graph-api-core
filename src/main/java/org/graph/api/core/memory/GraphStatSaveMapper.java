@@ -1,7 +1,6 @@
-package org.graph.api.core.util;
+package org.graph.api.core.memory;
 
 import lombok.Getter;
-import org.graph.api.core.memory.SavePointIgnore;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class GraphStateMapper {
+public class GraphStatSaveMapper {
 
     private static final Map<Class<?>, Methods> cache = new ConcurrentHashMap<>();
 

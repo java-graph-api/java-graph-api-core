@@ -45,14 +45,6 @@ public class NodeRouting<S extends GraphState> {
         return routes.get(0).getTarget();
     }
 
-    public Map<String, List<Route<S>>> getRoutes() { // todo unused> if not then suppress
-        return routes;
-    }
-
-    public Map<String, Node<?, ?, S>> getNodes() {  // todo unused> if not then suppress
-        return nodeMap.getNodeMap();
-    }
-
     private List<Route<S>> get(String nodeName) {
         return Objects.requireNonNullElse(routes.get(nodeName), Collections.emptyList());
     }

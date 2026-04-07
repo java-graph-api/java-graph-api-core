@@ -6,7 +6,7 @@ import org.graph.api.core.memory.SavePoint;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
-import org.graph.api.core.util.GraphStateMapper;
+import org.graph.api.core.memory.GraphStatSaveMapper;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +44,7 @@ public final class GraphExecutor<S extends GraphState> {
         Object currentResult = nodeExecutor.complete(beginNode, null, state);
 
         if (state.isGraphInterrupted()) {
-            return complete(state);
+            return state;
         }
 
         Route<S> route = nextRoute(beginNode, currentResult, state);
@@ -54,7 +54,7 @@ public final class GraphExecutor<S extends GraphState> {
             currentResult = nodeExecutor.execute(currentNode, currentResult, state);
 
             if (state.isGraphInterrupted()) {
-                return complete(state);
+                return state;
             }
 
             route = nextRoute(currentNode, currentResult, state);
@@ -67,7 +67,7 @@ public final class GraphExecutor<S extends GraphState> {
         return (StartPoint<Object, Object, S>) getSavePoint(state)
                 .map(sp -> StartPoint.<Object, O, S>builder()
                         .node((Node<Object, O, S>) nodeRouting.getNode(sp.nodeName()))
-                        .state((S) GraphStateMapper.merge(sp.state(), state))
+                        .state((S) GraphStatSaveMapper.merge(sp.state(), state))
                         .build()
                 ).orElseGet(() -> StartPoint.<Object, O, S>builder()
                         .node((Node<Object, O, S>) nodeRouting.getBeginNode())
