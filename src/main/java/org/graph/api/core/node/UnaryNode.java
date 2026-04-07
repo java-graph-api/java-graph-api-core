@@ -21,7 +21,7 @@ public class UnaryNode<D, S extends GraphState> extends FunctionalNode<D, D, S> 
      * @param nodeAction действие, выполняемое узлом
      */
     public UnaryNode(String name, UnaryNodeAction<D, S> nodeAction) {
-        super(name, nodeAction);
+        this(name, nodeAction, 0);
     }
 
     /**
@@ -33,28 +33,5 @@ public class UnaryNode<D, S extends GraphState> extends FunctionalNode<D, D, S> 
      */
     public UnaryNode(String name, UnaryNodeAction<D, S> nodeAction, int callLimit) {
         super(name, nodeAction, callLimit);
-    }
-
-    /**
-     * Создаёт узел-преобразователь без ограничения числа вызовов, но с метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param metadata   метаданные, описывающие узел
-     */
-    public UnaryNode(String name, UnaryNodeAction<D, S> nodeAction, Metadata metadata) {
-        super(name, nodeAction, metadata);
-    }
-
-    /**
-     * Создаёт узел-преобразователь с ограничением числа вызовов и метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param callLimit  максимальное число вызовов узла; {@code 0} означает отсутствие ограничения
-     * @param metadata   метаданные, описывающие узел
-     */
-    public UnaryNode(String name, UnaryNodeAction<D, S> nodeAction, int callLimit, Metadata metadata) {
-        super(name, nodeAction, callLimit, metadata);
     }
 }

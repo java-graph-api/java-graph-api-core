@@ -34,27 +34,4 @@ public class RunnableNode<S extends GraphState> extends ConsumerNode<Void, S> {
         super(name, nodeAction, callLimit);
     }
 
-    /**
-     * Создаёт узел без входных данных и результата без ограничения числа вызовов, но с метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param metadata   метаданные, описывающие узел
-     */
-    public RunnableNode(String name, RunnableNodeAction<S> nodeAction, Metadata metadata) {
-        super(name, nodeAction, metadata);
-    }
-
-    /**
-     * Создаёт узел без входных данных и результата с ограничением числа вызовов и метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param callLimit  максимальное число вызовов узла; {@code 0} означает отсутствие ограничения
-     * @param metadata   метаданные, описывающие узел
-     */
-    public RunnableNode(String name, RunnableNodeAction<S> nodeAction, int callLimit, Metadata metadata) {
-        super(name, nodeAction, callLimit, metadata);
-    }
-
 }

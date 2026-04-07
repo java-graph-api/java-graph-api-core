@@ -35,27 +35,4 @@ public class ConsumerNode<I, S extends GraphState> extends FunctionalNode<I, Voi
         super(name, nodeAction, callLimit);
     }
 
-    /**
-     * Создаёт узел без ограничения числа вызовов, но с метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param metadata   метаданные, описывающие узел
-     */
-    public ConsumerNode(String name, ConsumerNodeAction<I, S> nodeAction, Metadata metadata) {
-        super(name, nodeAction, metadata);
-    }
-
-    /**
-     * Создаёт узел с ограничением числа вызовов и метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param callLimit  максимальное число вызовов узла; {@code 0} означает отсутствие ограничения
-     * @param metadata   метаданные, описывающие узел
-     */
-    public ConsumerNode(String name, ConsumerNodeAction<I, S> nodeAction, int callLimit, Metadata metadata) {
-        super(name, nodeAction, callLimit, metadata);
-    }
-
 }

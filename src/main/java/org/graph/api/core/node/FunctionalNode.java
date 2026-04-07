@@ -20,7 +20,6 @@ public class FunctionalNode<I, O, S extends GraphState> extends AbstractNode<I, 
     private final String name;
     private final NodeAction<I, O, S> nodeAction;
     private final int callLimit;
-    private final Metadata metadata;
 
     /**
      * Создаёт узел с указанными именем и действием без ограничения числа вызовов и без метаданных.
@@ -29,29 +28,7 @@ public class FunctionalNode<I, O, S extends GraphState> extends AbstractNode<I, 
      * @param nodeAction действие, выполняемое узлом
      */
     public FunctionalNode(String name, NodeAction<I, O, S> nodeAction) {
-        this(name, nodeAction, 0, Metadata.empty());
-    }
-
-    /**
-     * Создаёт узел с указанными именем, действием и ограничением числа вызовов без метаданных.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param callLimit  максимальное число вызовов узла; {@code 0} означает отсутствие ограничения
-     */
-    public FunctionalNode(String name, NodeAction<I, O, S> nodeAction, int callLimit) {
-        this(name, nodeAction, callLimit, Metadata.empty());
-    }
-
-    /**
-     * Создаёт узел с указанными именем, действием и метаданными без ограничения числа вызовов.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param metadata   метаданные, описывающие узел
-     */
-    public FunctionalNode(String name, NodeAction<I, O, S> nodeAction, Metadata metadata) {
-        this(name, nodeAction, 0, metadata);
+        this(name, nodeAction, 0);
     }
 
     /**
@@ -60,14 +37,12 @@ public class FunctionalNode<I, O, S extends GraphState> extends AbstractNode<I, 
      * @param name       человекочитаемое имя узла
      * @param nodeAction действие, выполняемое узлом
      * @param callLimit  максимальное число вызовов узла; {@code 0} означает отсутствие ограничения
-     * @param metadata   метаданные, описывающие узел
      */
-    public FunctionalNode(String name, NodeAction<I, O, S> nodeAction, int callLimit, Metadata metadata) {
+    public FunctionalNode(String name, NodeAction<I, O, S> nodeAction, int callLimit) {
         validate(name, nodeAction);
         this.name = name;
         this.nodeAction = nodeAction;
         this.callLimit = callLimit;
-        this.metadata = metadata;
     }
 
     /**
@@ -90,16 +65,6 @@ public class FunctionalNode<I, O, S extends GraphState> extends AbstractNode<I, 
     @Override
     public O call(I input, S state) {
         return nodeAction.action(input, state);
-    }
-
-    /**
-     * Возвращает метаданные, связанные с узлом, если они были указаны.
-     *
-     * @return метаданные узла или {@code null}, если метаданные не заданы
-     */
-    @Override
-    public Metadata getMetadata() {
-        return metadata;
     }
 
     /**

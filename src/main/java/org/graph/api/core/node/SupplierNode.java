@@ -21,7 +21,7 @@ public class SupplierNode<O, S extends GraphState> extends FunctionalNode<Void, 
      * @param nodeAction действие, выполняемое узлом
      */
     public SupplierNode(String name, SupplierNodeAction<O, S> nodeAction) {
-        super(name, nodeAction);
+        this(name, nodeAction, 0);
     }
 
     /**
@@ -33,29 +33,6 @@ public class SupplierNode<O, S extends GraphState> extends FunctionalNode<Void, 
      */
     public SupplierNode(String name, SupplierNodeAction<O, S> nodeAction, int callLimit) {
         super(name, nodeAction, callLimit);
-    }
-
-    /**
-     * Создаёт узел-источник без ограничения числа вызовов, но с метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param metadata   метаданные, описывающие узел
-     */
-    public SupplierNode(String name, SupplierNodeAction<O, S> nodeAction, Metadata metadata) {
-        super(name, nodeAction, metadata);
-    }
-
-    /**
-     * Создаёт узел-источник с ограничением числа вызовов и метаданными.
-     *
-     * @param name       человекочитаемое имя узла
-     * @param nodeAction действие, выполняемое узлом
-     * @param callLimit  максимальное число вызовов узла; {@code 0} означает отсутствие ограничения
-     * @param metadata   метаданные, описывающие узел
-     */
-    public SupplierNode(String name, SupplierNodeAction<O, S> nodeAction, int callLimit, Metadata metadata) {
-        super(name, nodeAction, callLimit, metadata);
     }
 
 }
