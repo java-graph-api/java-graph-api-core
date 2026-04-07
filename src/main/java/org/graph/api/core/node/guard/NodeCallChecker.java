@@ -5,21 +5,8 @@ import org.graph.api.core.aspect.JoinPoint;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.exception.TooManyNodeCallException;
 
-/**
- * Аспект, контролирующий количество вызовов узла и выбрасывающий исключение при превышении лимита.
- *
- * <p>Использует {@link NodeCallState} из контекста {@link JoinPoint} для подсчёта вызовов и
- * учитывает ограничение, заданное либо в {@link org.graph.api.core.node.NodeInfo},
- * либо в глобальных настройках графа.</p>
- */
 public class NodeCallChecker implements NodeAspect<GraphState> {
 
-    /**
-     * Проверяет количество вызовов до выполнения узла.
-     *
-     * @param joinPoint объединённый контекст текущего вызова узла
-     * @param input     входное значение, переданное узлу
-     */
     @Override
     public void before(JoinPoint<GraphState> joinPoint, Object input) {
         NodeCallState callCounter = joinPoint.getState();
