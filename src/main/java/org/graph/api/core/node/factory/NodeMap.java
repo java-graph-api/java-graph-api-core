@@ -3,7 +3,6 @@ package org.graph.api.core.node.factory;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.node.Node;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +29,4 @@ public class NodeMap<S extends GraphState> {
         return nodeMap.containsKey(key);
     }
 
-    public Map<String, Node<?, ?, S>> getNodeMap() {
-        return Collections.unmodifiableMap(nodeMap);
-    }
 }
