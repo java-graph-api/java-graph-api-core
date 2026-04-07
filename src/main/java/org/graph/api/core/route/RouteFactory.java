@@ -20,7 +20,7 @@ public class RouteFactory<S extends GraphState> {
                                 schema.type()
                         )
                 ).collect(Collectors.groupingBy(route ->
-                                route.getType() == Route.Type.BEGIN
+                                route.isBegin()
                                         ? Route.Type.BEGIN.name()
                                         : route.getSource().getName()
                         )
@@ -33,14 +33,6 @@ public class RouteFactory<S extends GraphState> {
 
     public RouteSchema create(String source, String target, RouteConditional<?, ?> conditional, Route.Type type) {
         return new RouteSchema(source, target, conditional, type);
-    }
-
-    public RouteSchema create(String source, String target) {
-        return new RouteSchema(source, target, (output, state) -> true, Route.Type.DEFAULT);
-    }
-
-    public RouteSchema create(String source, String target, RouteConditional<?, ?> conditional) {
-        return new RouteSchema(source, target, conditional, Route.Type.CONDITIONAL);
     }
 
     public RouteSchema end(String nodeName) {

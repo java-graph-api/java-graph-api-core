@@ -1,19 +1,18 @@
 package org.graph.api.core.route;
 
+import lombok.Getter;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.route.conditional.RouteConditional;
 
-import java.util.UUID;
-
 public class Route<S extends GraphState> {
 
     private final Node<?, ?, S> source;
+    @Getter
     private final Node<?, ?, S> target;
     private final RouteConditional<?, S> conditional;
     private final Type type;
-    private final UUID id = UUID.randomUUID();
 
     Route(Node<?, ?, S> source, Node<?, ?, S> target, RouteConditional<?, S> conditional, Type type) {
         this.source = source;
@@ -24,13 +23,9 @@ public class Route<S extends GraphState> {
 
     public Node<?, ?, S> getSource() {
         if (source == null) {
-            throw new GraphRoutingException(target.getName());
+            throw GraphRoutingException.routeNotFound(target.getName());
         }
         return source;
-    }
-
-    public Node<?, ?, S> getTarget() {
-        return target;
     }
 
     public <T> boolean test(T output, S state) {
@@ -38,16 +33,20 @@ public class Route<S extends GraphState> {
         return ((RouteConditional<T, S>) conditional).test(output, state);
     }
 
-    public Type getType() {
-        return type;
+    public boolean isBegin() {
+        return type == Type.BEGIN;
     }
 
     public boolean isEnd() {
         return type == Type.END;
     }
 
-    public UUID getId() {
-        return id;
+    public boolean isConditional() {
+        return type == Type.CONDITIONAL;
+    }
+
+    public boolean isDefault() {
+        return type == Type.DEFAULT;
     }
 
     public enum Type {

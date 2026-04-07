@@ -1,25 +1,33 @@
 package org.graph.api.core;
 
-import org.graph.api.core.memory.GraphMemory;
+import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.memory.GraphMemoryDefault;
 import org.graph.api.core.node.ConsumerNode;
 import org.graph.api.core.node.SupplierNode;
 import org.graph.api.core.options.GraphOptions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GraphRoutingTest {
 
-    private GraphMemory memory;
+    private GraphBuilder<SimpleState> graphBuilder;
 
     @BeforeEach
     public void setup() {
-        memory = new GraphMemoryDefault();
+        var options = GraphOptions.builder()
+                .graphName("GraphRoutingTest")
+                .build();
+
+        graphBuilder = new GraphBuilder<SimpleState>()
+                .memory(new GraphMemoryDefault())
+                .options(options);
     }
 
     SupplierNode<Integer, SimpleState> node1 = new SupplierNode<>(
@@ -52,15 +60,7 @@ public class GraphRoutingTest {
     @ParameterizedTest
     @MethodSource("getNumbers")
     void routingTest(int number) {
-        var options = GraphOptions.builder()
-                .graphName("GraphRoutingTest")
-                .build();
-
-        var graph = new GraphBuilder<SimpleState>()
-                .memory(memory)
-                .options(options);
-
-        var executor = graph
+        var executor = graphBuilder
                 .begin(node1)
                 .route(node1, node2, state -> !state.isEvenNumber())
                 .route(node2, node4)
@@ -78,5 +78,41 @@ public class GraphRoutingTest {
 
     private static IntStream getNumbers() {
         return IntStream.rangeClosed(0, 10);
+    }
+
+    @Test
+    void routeNotFoundTest() {
+        var exception = assertThrows(
+                GraphRoutingException.class,
+                () -> graphBuilder
+                        .begin(node1)
+                        .route(node2, node4)
+                        .route(node4, node3, (output, state) -> output % 2 == 0)
+                        .route(node1, node3, SimpleState::isEvenNumber)
+                        .end(node3)
+        );
+
+        assertEquals("Route for node 'node4' not found", exception.getMessage());
+    }
+
+    @Test
+    void multipleRoutesFoundTest() {
+        var exception = assertThrows(
+                GraphRoutingException.class,
+                () -> {
+                    var executor = graphBuilder
+                            .begin(node1)
+                            .route(node1, node3)
+                            .route(node1, node2, state -> !state.isEvenNumber())
+                            .route(node2, node4)
+                            .route(node4, node3, (output, state) -> output % 2 == 0)
+                            .end(node3);
+                    SimpleState state = new SimpleState();
+                    state.setInput(1);
+                    executor.execute(state, "id");
+                }
+        );
+
+        assertEquals("Multiple routes found for node 'node1': [node1 -> node3, node1 -> node2]", exception.getMessage());
     }
 }

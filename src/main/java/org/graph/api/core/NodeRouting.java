@@ -22,12 +22,22 @@ public class NodeRouting<S extends GraphState> {
     }
 
     public Route<S> getRoute(Node<?, ?, S> node, Object output, S state) {
-        for (Route<S> route : get(node.getName())) {
-            if (route.test(output, state)) {
-                return route;
+        List<Route<S>> conditionalRoutes = get(node.getName()).stream()
+                .filter(route -> route.test(output, state))
+                .toList();
+
+        if (conditionalRoutes.isEmpty()) {
+            throw GraphRoutingException.routeNotFound(node.getName());
+        } else if (conditionalRoutes.size() > 1) {
+            if (conditionalRoutes.size() == 2) {
+                if (conditionalRoutes.get(0).isConditional() && conditionalRoutes.get(1).isDefault()) {
+                    return conditionalRoutes.get(0);
+                }
             }
+            throw GraphRoutingException.multipleRoutesFound(node.getName(), conditionalRoutes);
+        } else {
+            return conditionalRoutes.get(0);
         }
-        throw new GraphRoutingException(node.getName());
     }
 
     public Node<?, ?, S> getNode(String nodeName) {
@@ -40,7 +50,7 @@ public class NodeRouting<S extends GraphState> {
     public Node<?, ?, S> getBeginNode() {
         var routes = this.routes.get(Route.Type.BEGIN.name());
         if (routes == null || routes.size() != 1) {
-            throw new GraphRoutingException(Route.Type.BEGIN.name());
+            throw GraphRoutingException.routeNotFound(Route.Type.BEGIN.name());
         }
         return routes.get(0).getTarget();
     }
