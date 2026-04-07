@@ -5,7 +5,6 @@ import org.graph.api.core.node.guard.NodeCallState;
 import java.util.UUID;
 
 public class GraphState extends NodeCallState {
-    // todo все классы состояния должны быть абстрактными и sealed
 
     private transient ExecutorStatus executorStatus;
     private String sessionId;
@@ -23,10 +22,8 @@ public class GraphState extends NodeCallState {
         return executorStatus;
     }
 
-    public final <T extends GraphState> T interrupt() {
-        // todo need test
+    public final void toInterruptGraph() {
         setExecutorStatus(ExecutorStatus.INTERRUPT);
-        return (T) this;
     }
 
     final void completed() {

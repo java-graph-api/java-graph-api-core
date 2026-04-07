@@ -27,8 +27,7 @@ import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GraphCompileTest {
 
@@ -200,7 +199,7 @@ public class GraphCompileTest {
         private int amountSteps;
         private boolean interrupt;
 
-        public void toInterruptGraph() {
+        public void toInterruptGraphCustom() {
             interrupt = true;
         }
     }
@@ -244,7 +243,7 @@ public class GraphCompileTest {
             "checkForInterrupt",
             state -> {
                 if (state.size < state.getTargetSize()) {
-                    state.toInterruptGraph();
+                    state.toInterruptGraphCustom();
                 } else {
                     state.setInterrupt(false);
                 }
@@ -415,6 +414,7 @@ public class GraphCompileTest {
         graphExecutor.execute(state, "id");
 
         assertEquals(100_000, state.getNumber());
+        assertNotEquals(null, state.getExecutionId());
     }
 
     private static class IncrementNode extends UnaryNode<Integer, SimpleState> {

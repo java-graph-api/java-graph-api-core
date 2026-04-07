@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 public class SimpleState extends GraphState implements Serializable {
 
+    private Integer inputWithoutSave;
     private Integer input;
     private UserRequest userRequest;
     private boolean conditional;
@@ -32,11 +33,17 @@ public class SimpleState extends GraphState implements Serializable {
         counter++;
     }
 
-    public void toInterruptGraph() {
+    public void toInterruptGraphCustom() {
         interrupt = true;
     }
 
     @SavePointIgnore
+    public void setInputWithoutSave(Integer inputWithoutSave) {
+        this.inputWithoutSave = inputWithoutSave;
+    }
+
+    @SavePointIgnore
+    @SuppressWarnings("unused")
     public boolean isNotSerialize() {
         return notSerialize;
     }
