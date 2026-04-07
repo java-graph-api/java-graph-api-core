@@ -1,12 +1,13 @@
 package org.graph.api.core.util;
 
 import org.graph.api.core.SimpleState;
+import org.graph.api.core.memory.GraphStatSaveMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class GraphStateMapperTest {
+public class GraphStatSaveMapperTest {
 
     @Test
     void serializeTest() {
@@ -16,7 +17,7 @@ public class GraphStateMapperTest {
 
         SimpleState stateTarget = new SimpleState();
 
-        GraphStateMapper.merge(stateSource, stateTarget);
+        GraphStatSaveMapper.merge(stateSource, stateTarget);
 
         assertFalse(stateTarget.isSerialize());
         assertEquals(0, stateTarget.getResult());
