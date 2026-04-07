@@ -34,7 +34,7 @@ public class NodeRouting<S extends GraphState> {
         if (nodeMap.containsKey(nodeName)) {
             return nodeMap.get(nodeName);
         }
-        throw new GraphNodeNotFoundException(String.format("Node '%s' not found", nodeName));
+        throw new GraphNodeNotFoundException(nodeName);
     }
 
     public Node<?, ?, S> getBeginNode() {
