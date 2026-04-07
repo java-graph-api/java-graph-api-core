@@ -4,6 +4,10 @@ import java.util.Optional;
 
 public interface GraphMemory {
 
+    void put(SavePoint savePoint);
+
+    Optional<SavePoint> get(String graphName, String sessionId);
+
     default void put(String graphName, String nodeName, Object state, String sessionId) {
         var savePoint = SavePoint.builder()
                 .graphName(graphName)
@@ -15,9 +19,5 @@ public interface GraphMemory {
 
         this.put(savePoint);
     }
-
-    void put(SavePoint savePoint);
-
-    Optional<SavePoint> get(String graphName, String sessionId);
 
 }
