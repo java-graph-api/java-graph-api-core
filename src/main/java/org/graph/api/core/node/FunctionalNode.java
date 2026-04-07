@@ -4,6 +4,7 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.node.action.NodeAction;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Базовая реализация {@link Node}, инкапсулирующая функциональный обработчик узла.
@@ -15,10 +16,11 @@ import java.util.Objects;
  * @param <O> тип выходных данных, производимых узлом
  * @param <S> тип состояния графа, доступного узлу во время выполнения
  */
-public class FunctionalNode<I, O, S extends GraphState> extends AbstractNode<I, O, S> {
+public class FunctionalNode<I, O, S extends GraphState> implements Node<I, O, S> {
 
     private final String name;
     private final NodeAction<I, O, S> nodeAction;
+    private final UUID id = UUID.randomUUID();
     private final int callLimit;
 
     /**
@@ -75,6 +77,11 @@ public class FunctionalNode<I, O, S extends GraphState> extends AbstractNode<I, 
     @Override
     public int callLimit() {
         return callLimit;
+    }
+
+    @Override
+    public UUID getId() {
+        return id;
     }
 
     /**
