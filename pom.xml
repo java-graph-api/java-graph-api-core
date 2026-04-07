@@ -8,7 +8,7 @@
 
     <groupId>io.github.java-graph-api</groupId>
     <artifactId>java-graph-api-core</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
     <packaging>jar</packaging>
 
     <name>java-graph-api-core</name>
