@@ -7,7 +7,4 @@ public interface UnaryNodeAction<D, S extends GraphState> extends NodeAction<D, 
 
     D action(D input, S state);
 
-    static <D, S extends GraphState> UnaryNodeAction<D, S> identity() {
-        return (input, state) -> input;
-    }
 }

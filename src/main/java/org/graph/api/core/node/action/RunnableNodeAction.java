@@ -18,6 +18,7 @@ public interface RunnableNodeAction<S extends GraphState> extends ConsumerNodeAc
 
     static <S extends GraphState> RunnableNodeAction<S> noop() {
         return (state) -> {
+            // void
         };
     }
 }
