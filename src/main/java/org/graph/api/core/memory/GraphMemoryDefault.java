@@ -11,12 +11,7 @@ public final class GraphMemoryDefault implements GraphMemory {
 
     @Override
     public void put(SavePoint savePoint) {
-        var sp = SavePoint.builder()
-                .graphName(savePoint.graphName())
-                .nodeName(savePoint.nodeName())
-                .sessionId(savePoint.sessionId())
-                .state(serialize((Serializable) savePoint.state()))
-                .build();
+        var sp = savePointBuilder(savePoint, serialize((Serializable) savePoint.state()));
         store.computeIfAbsent(savePoint.graphName(), v -> new ConcurrentHashMap<>())
                 .put(savePoint.sessionId(), sp);
     }
@@ -25,15 +20,19 @@ public final class GraphMemoryDefault implements GraphMemory {
     public Optional<SavePoint> get(String graphName, String sessionId) {
         return Optional.ofNullable(store.get(graphName))
                 .map(m -> m.get(sessionId))
-                .map(savePoint -> SavePoint.builder()
-                        .graphName(savePoint.graphName())
-                        .nodeName(savePoint.nodeName())
-                        .sessionId(savePoint.sessionId())
-                        .state(deserialize((byte[]) savePoint.state()))
-                        .build());
+                .map(savePoint -> savePointBuilder(savePoint, deserialize((byte[]) savePoint.state())));
     }
 
-    private static byte[] serialize(Serializable object) {
+    private SavePoint savePointBuilder(SavePoint savePoint, Object state) {
+        return SavePoint.builder()
+                .graphName(savePoint.graphName())
+                .nodeName(savePoint.nodeName())
+                .sessionId(savePoint.sessionId())
+                .state(state)
+                .build();
+    }
+
+    private byte[] serialize(Serializable object) {
         try (
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bos)
@@ -41,21 +40,19 @@ public final class GraphMemoryDefault implements GraphMemory {
             out.writeObject(object);
             out.flush();
             return bos.toByteArray();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
         }
     }
 
-    private static Object deserialize(byte[] data) {
+    private Object deserialize(byte[] data) {
         try (
                 ByteArrayInputStream bis = new ByteArrayInputStream(data);
                 ObjectInputStream in = new ObjectInputStream(bis)
         ) {
             return in.readObject();
-
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | ClassNotFoundException exception) {
+            throw new RuntimeException(exception);
         }
     }
 }
