@@ -1,7 +1,7 @@
 package org.graph.api.core.aspect;
 
 import org.graph.api.core.ExecutorStatus;
-import org.graph.api.core.GraphBuilder;
+import org.graph.api.core.GraphSpecification;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.SimpleState;
 import org.graph.api.core.memory.GraphMemory;
@@ -112,12 +112,12 @@ public class AspectNodeTest {
 
     @Test
     void aspectModifierTest() {
-        GraphBuilder<SimpleState> graphBuilder = new GraphBuilder<SimpleState>()
+        GraphSpecification<SimpleState> graphSpecification = new GraphSpecification<SimpleState>()
                 .memory(memory)
                 .options(options)
                 .aspects(List.of(aspect, aspectDefault, new LoggingAspect()));
 
-        var graphExecutor = graphBuilder
+        var graphExecutor = graphSpecification
                 .begin(node1)
                 .route(node1, node2)
                 .route(node2, node3)

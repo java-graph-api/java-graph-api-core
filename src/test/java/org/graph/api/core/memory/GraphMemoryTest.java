@@ -1,7 +1,7 @@
 package org.graph.api.core.memory;
 
 import org.graph.api.core.ExecutorStatus;
-import org.graph.api.core.GraphBuilder;
+import org.graph.api.core.GraphSpecification;
 import org.graph.api.core.SimpleState;
 import org.graph.api.core.node.ConsumerNode;
 import org.graph.api.core.node.RunnableNode;
@@ -22,7 +22,7 @@ public class GraphMemoryTest {
             .graphName("GraphMemoryTest")
             .build();
 
-    private GraphBuilder<SimpleState> graphBuilder;
+    private GraphSpecification<SimpleState> graphSpecification;
 
     private GraphMemory graphMemory;
 
@@ -69,14 +69,14 @@ public class GraphMemoryTest {
     @BeforeEach
     public void beforeEach() {
         graphMemory = new GraphMemoryDefault();
-        graphBuilder = new GraphBuilder<SimpleState>()
+        graphSpecification = new GraphSpecification<SimpleState>()
                 .memory(graphMemory)
                 .options(options);
     }
 
     @Test
     void savePointTest() {
-        var executor = graphBuilder
+        var executor = graphSpecification
                 .begin(node1)
                 .route(node1, node2)
                 .route(node2, node3)
@@ -105,7 +105,7 @@ public class GraphMemoryTest {
 
     @Test
     void interruptedTest() {
-        var executor = graphBuilder
+        var executor = graphSpecification
                 .begin(node1)
                 .route(node1, node2)
                 .route(node2, node6, SimpleState::isInterrupt)
@@ -122,7 +122,7 @@ public class GraphMemoryTest {
 
     @Test
     void savePointTestWithRedirect() {
-        var executor = graphBuilder
+        var executor = graphSpecification
                 .begin(node1)
                 .route(node1, node4)
                 .route(node2, node3)

@@ -60,7 +60,7 @@ public class GraphCompileTest {
                 .graphName("GraphCompileTest")
                 .build();
 
-        var graph = new GraphBuilder<SimpleState>()
+        var graph = new GraphSpecification<SimpleState>()
                 .options(options)
                 .memory(memory)
                 .begin(node1)
@@ -104,7 +104,7 @@ public class GraphCompileTest {
                 RunnableNodeAction.noop()
         );
 
-        var graph = new GraphBuilder<SimpleState>()
+        var graph = new GraphSpecification<SimpleState>()
                 .options(options)
                 .memory(memory)
                 .begin(node1)
@@ -152,7 +152,7 @@ public class GraphCompileTest {
                 .graphName("GraphCompileTest")
                 .build();
 
-        var graph = new GraphBuilder<SimpleState>()
+        var graph = new GraphSpecification<SimpleState>()
                 .options(options)
                 .memory(memory)
                 .begin(node1)
@@ -342,7 +342,7 @@ public class GraphCompileTest {
                 .graphName("GraphCompileTest")
                 .build();
 
-        var graph = new GraphBuilder<UserState>()
+        var graph = new GraphSpecification<UserState>()
                 .options(options)
                 .aspect(new StepCounter())
                 .memory(new GraphMemoryDefault())
@@ -384,7 +384,7 @@ public class GraphCompileTest {
 
         var beginNode = new IncrementNodeBegin();
 
-        var routeSpec = new GraphBuilder<SimpleState>()
+        var routeSpec = new GraphSpecification<SimpleState>()
                 .options(options)
                 .begin(beginNode);
 

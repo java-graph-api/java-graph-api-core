@@ -1,6 +1,6 @@
 package org.graph.api.core.node.guard;
 
-import org.graph.api.core.GraphBuilder;
+import org.graph.api.core.GraphSpecification;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.SimpleState;
 import org.graph.api.core.exception.TooManyNodeCallException;
@@ -31,7 +31,7 @@ public class NodeCallGuardTest {
                 .graphName("NodeCallCounterTest")
                 .build();
 
-        var graph = new GraphBuilder<SimpleState>()
+        var graph = new GraphSpecification<SimpleState>()
                 .options(options)
                 .begin(node1)
                 .route(node1, node1, state -> !state.isEvenNumber())
@@ -44,7 +44,7 @@ public class NodeCallGuardTest {
         assertEquals(String.format("Too many node call. Node '%s' calls: %s", node1.getName(), options.getNodeCallLimit() + 1), ex.getMessage());
         assertEquals(state.getCounter(), options.getNodeCallLimit());
 
-        var graph2 = new GraphBuilder<SimpleState>()
+        var graph2 = new GraphSpecification<SimpleState>()
                 .options(options)
                 .begin(node2)
                 .route(node2, node2, s -> !s.isEvenNumber())

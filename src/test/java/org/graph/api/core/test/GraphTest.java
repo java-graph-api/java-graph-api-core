@@ -1,7 +1,7 @@
 package org.graph.api.core.test;
 
 import org.graph.api.core.ExecutorStatus;
-import org.graph.api.core.GraphBuilder;
+import org.graph.api.core.GraphSpecification;
 import org.graph.api.core.GraphExecutor;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.GraphMemoryDefault;
@@ -155,7 +155,7 @@ public class GraphTest {
                 .graphName("OrderGraph")
                 .build();
 
-        return new GraphBuilder<OrderState>()
+        return new GraphSpecification<OrderState>()
                 .options(options)
                 .memory(memory)
 

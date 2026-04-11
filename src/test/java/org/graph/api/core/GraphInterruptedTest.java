@@ -38,7 +38,7 @@ public class GraphInterruptedTest {
     @Test
     void interruptedTest() {
 
-        var graph = new GraphBuilder<SimpleState>()
+        var graph = new GraphSpecification<SimpleState>()
                 .options(options)
                 .memory(memory)
                 .begin(node1)

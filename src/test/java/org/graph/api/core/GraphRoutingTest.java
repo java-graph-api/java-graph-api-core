@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GraphRoutingTest {
 
-    private GraphBuilder<SimpleState> graphBuilder;
+    private GraphSpecification<SimpleState> graphSpecification;
 
     @BeforeEach
     public void setup() {
@@ -25,7 +25,7 @@ public class GraphRoutingTest {
                 .graphName("GraphRoutingTest")
                 .build();
 
-        graphBuilder = new GraphBuilder<SimpleState>()
+        graphSpecification = new GraphSpecification<SimpleState>()
                 .memory(new GraphMemoryDefault())
                 .options(options);
     }
@@ -60,7 +60,7 @@ public class GraphRoutingTest {
     @ParameterizedTest
     @MethodSource("getNumbers")
     void routingTest(int number) {
-        var executor = graphBuilder
+        var executor = graphSpecification
                 .begin(node1)
                 .route(node1, node2, state -> !state.isEvenNumber())
                 .route(node2, node4)
@@ -84,7 +84,7 @@ public class GraphRoutingTest {
     void routeNotFoundTest() {
         var exception = assertThrows(
                 GraphRoutingException.class,
-                () -> graphBuilder
+                () -> graphSpecification
                         .begin(node1)
                         .route(node2, node4)
                         .route(node4, node3, (output, state) -> output % 2 == 0)
@@ -100,7 +100,7 @@ public class GraphRoutingTest {
         var exception = assertThrows(
                 GraphRoutingException.class,
                 () -> {
-                    var executor = graphBuilder
+                    var executor = graphSpecification
                             .begin(node1)
                             .route(node1, node3)
                             .route(node1, node2, state -> !state.isEvenNumber())
