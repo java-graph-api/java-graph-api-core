@@ -6,7 +6,7 @@ import org.graph.api.core.memory.SavePoint;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
-import org.graph.api.core.memory.GraphStatSaveMapper;
+import org.graph.api.core.memory.GraphStateMerger;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -67,7 +67,7 @@ public final class GraphExecutor<S extends GraphState> {
         return (StartPoint<Object, Object, S>) getSavePoint(state)
                 .map(sp -> StartPoint.<Object, O, S>builder()
                         .node((Node<Object, O, S>) nodeRouting.getNode(sp.nodeName()))
-                        .state((S) GraphStatSaveMapper.merge(sp.state(), state))
+                        .state((S) GraphStateMerger.merge(sp.state(), state))
                         .build()
                 ).orElseGet(() -> StartPoint.<Object, O, S>builder()
                         .node((Node<Object, O, S>) nodeRouting.getBeginNode())

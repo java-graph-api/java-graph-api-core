@@ -90,7 +90,7 @@ public class GraphMemoryTest {
         assertTrue(graphMemory.get("GraphMemoryTest", state.getSessionId()).isPresent());
 
         var dataFromSave = graphMemory.get("GraphMemoryTest", state.getSessionId()).get().state();
-        GraphStatSaveMapper.merge(dataFromSave, state);
+        GraphStateMerger.merge(dataFromSave, state);
 
         assertEquals("id", state.getSessionId());
 

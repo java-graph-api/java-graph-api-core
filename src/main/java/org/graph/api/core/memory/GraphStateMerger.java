@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class GraphStatSaveMapper {
+public class GraphStateMerger {
 
     private static final Map<Class<?>, Methods> cache = new ConcurrentHashMap<>();
 
