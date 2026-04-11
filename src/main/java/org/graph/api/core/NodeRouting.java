@@ -22,22 +22,8 @@ public class NodeRouting<S extends GraphState> {
     }
 
     public Route<S> getRoute(Node<?, ?, S> node, Object output, S state) {
-        List<Route<S>> conditionalRoutes = get(node.getName()).stream()
-                .filter(route -> route.test(output, state))
-                .toList();
-
-        if (conditionalRoutes.isEmpty()) {
-            throw GraphRoutingException.routeNotFound(node.getName());
-        } else if (conditionalRoutes.size() > 1) {
-            if (conditionalRoutes.size() == 2) {
-                if (conditionalRoutes.get(0).isConditional() && conditionalRoutes.get(1).isDefault()) {
-                    return conditionalRoutes.get(0);
-                }
-            }
-            throw GraphRoutingException.multipleRoutesFound(node.getName(), conditionalRoutes);
-        } else {
-            return conditionalRoutes.get(0);
-        }
+        List<Route<S>> conditionalRoutes = getConditionalRoutes(node, output, state);
+        return getRouteOrThrow(node, conditionalRoutes);
     }
 
     public Node<?, ?, S> getNode(String nodeName) {
@@ -55,7 +41,28 @@ public class NodeRouting<S extends GraphState> {
         return routes.get(0).getTarget();
     }
 
+    private List<Route<S>> getConditionalRoutes(Node<?, ?, S> node, Object output, S state) {
+        return get(node.getName()).stream()
+                .filter(route -> route.test(output, state))
+                .toList();
+    }
+
     private List<Route<S>> get(String nodeName) {
         return Objects.requireNonNullElse(routes.get(nodeName), Collections.emptyList());
+    }
+
+    private Route<S> getRouteOrThrow(Node<?, ?, S> node, List<Route<S>> conditionalRoutes) {
+        if (conditionalRoutes.isEmpty()) {
+            throw GraphRoutingException.routeNotFound(node.getName());
+        } else if (conditionalRoutes.size() > 1) {
+            if (conditionalRoutes.size() == 2) {
+                if (conditionalRoutes.get(0).isConditional() && conditionalRoutes.get(1).isDefault()) {
+                    return conditionalRoutes.get(0);
+                }
+            }
+            throw GraphRoutingException.multipleRoutesFound(node.getName(), conditionalRoutes);
+        } else {
+            return conditionalRoutes.get(0);
+        }
     }
 }
