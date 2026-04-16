@@ -2,7 +2,7 @@ package org.graph.api.core;
 
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.GraphMemoryDefault;
-import org.graph.api.core.node.RunnableNode;
+import org.graph.api.core.node.RunnableNodeImpl;
 import org.graph.api.core.node.action.RunnableNodeAction;
 import org.graph.api.core.options.GraphOptions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ public class GraphInterruptedTest {
             .graphName("GraphInterruptedTest")
             .build();
 
-    RunnableNode<SimpleState> node1 = new RunnableNode<>(
+    RunnableNodeImpl<SimpleState> node1 = new RunnableNodeImpl<>(
             "node1",
             state -> {
                 state.setResult(state.getInputWithoutSave() + 1);
@@ -25,12 +25,12 @@ public class GraphInterruptedTest {
             }
     );
 
-    RunnableNode<SimpleState> node2 = new RunnableNode<>(
+    RunnableNodeImpl<SimpleState> node2 = new RunnableNodeImpl<>(
             "node2",
             GraphState::toInterruptGraph
     );
 
-    RunnableNode<SimpleState> node3 = new RunnableNode<>(
+    RunnableNodeImpl<SimpleState> node3 = new RunnableNodeImpl<>(
             "node3",
             RunnableNodeAction.noop()
     );

@@ -55,7 +55,7 @@ public class NodeTest {
 
     @Test
     void statelessNode() {
-        RunnableNode<SimpleState> runnableNode = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> runnableNode = new RunnableNodeImpl<>(
                 "statelessNode",
                 state -> state.setConditional(true)
         );

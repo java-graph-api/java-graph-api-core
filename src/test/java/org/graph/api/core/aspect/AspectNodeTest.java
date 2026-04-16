@@ -9,7 +9,7 @@ import org.graph.api.core.memory.GraphMemoryDefault;
 import org.graph.api.core.model.IntegerSimpleStateNode;
 import org.graph.api.core.node.ConsumerNode;
 import org.graph.api.core.node.SupplierNode;
-import org.graph.api.core.node.RunnableNode;
+import org.graph.api.core.node.RunnableNodeImpl;
 import org.graph.api.core.node.factory.NodeProxyFactory;
 import org.graph.api.core.options.GraphOptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -148,7 +148,7 @@ public class AspectNodeTest {
                 .graphName("GraphCompileTest")
                 .build();
 
-        RunnableNode<SimpleState> node1 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node1 = new RunnableNodeImpl<>(
                 "node1",
                 state -> result.add(2)
         );

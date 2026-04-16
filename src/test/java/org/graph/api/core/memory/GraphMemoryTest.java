@@ -4,7 +4,7 @@ import org.graph.api.core.ExecutorStatus;
 import org.graph.api.core.GraphSpecification;
 import org.graph.api.core.SimpleState;
 import org.graph.api.core.node.ConsumerNode;
-import org.graph.api.core.node.RunnableNode;
+import org.graph.api.core.node.RunnableNodeImpl;
 import org.graph.api.core.node.SupplierNode;
 import org.graph.api.core.node.action.RunnableNodeAction;
 import org.graph.api.core.options.GraphOptions;
@@ -46,12 +46,12 @@ public class GraphMemoryTest {
             }
     );
 
-    RunnableNode<SimpleState> node3 = new RunnableNode<>(
+    RunnableNodeImpl<SimpleState> node3 = new RunnableNodeImpl<>(
             "node3",
             state -> state.setResult(state.getResult() + 2)
     );
 
-    RunnableNode<SimpleState> node6 = new RunnableNode<>(
+    RunnableNodeImpl<SimpleState> node6 = new RunnableNodeImpl<>(
             "node6",
             RunnableNodeAction.noop()
     );

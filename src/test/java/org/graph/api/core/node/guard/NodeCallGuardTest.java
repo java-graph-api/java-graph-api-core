@@ -4,7 +4,7 @@ import org.graph.api.core.GraphSpecification;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.SimpleState;
 import org.graph.api.core.exception.TooManyNodeCallException;
-import org.graph.api.core.node.RunnableNode;
+import org.graph.api.core.node.RunnableNodeImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,12 +14,12 @@ public class NodeCallGuardTest {
 
     private static final int CALL_LIMIT = 50;
 
-    RunnableNode<SimpleState> node1 = new RunnableNode<>(
+    RunnableNodeImpl<SimpleState> node1 = new RunnableNodeImpl<>(
             "1",
             SimpleState::countIncrement
     );
 
-    RunnableNode<SimpleState> node2 = new RunnableNode<>(
+    RunnableNodeImpl<SimpleState> node2 = new RunnableNodeImpl<>(
             "2",
             SimpleState::countIncrement,
             CALL_LIMIT

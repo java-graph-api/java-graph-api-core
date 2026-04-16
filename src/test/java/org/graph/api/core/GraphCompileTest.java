@@ -41,17 +41,17 @@ public class GraphCompileTest {
     @Test
     void compileTest() {
 
-        RunnableNode<SimpleState> node1 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node1 = new RunnableNodeImpl<>(
                 "node1",
                 state -> state.setResult(4)
         );
 
-        RunnableNode<SimpleState> node2 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node2 = new RunnableNodeImpl<>(
                 "node2",
                 state -> state.setResult(2)
         );
 
-        RunnableNode<SimpleState> node3 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node3 = new RunnableNodeImpl<>(
                 "node3",
                 state -> state.setResult(3)
         );
@@ -79,27 +79,27 @@ public class GraphCompileTest {
                 .graphName("GraphCompileTest")
                 .build();
 
-        RunnableNode<SimpleState> node1 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node1 = new RunnableNodeImpl<>(
                 "node1",
                 (state) -> state.setNumber(state.getInput())
         );
 
-        RunnableNode<SimpleState> node2 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node2 = new RunnableNodeImpl<>(
                 "node2",
                 state -> state.setResult(2)
         );
 
-        RunnableNode<SimpleState> node3 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node3 = new RunnableNodeImpl<>(
                 "node3",
                 state -> state.setResult(3)
         );
 
-        RunnableNode<SimpleState> node4 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node4 = new RunnableNodeImpl<>(
                 "node4",
                 state -> state.setResult(4)
         );
 
-        RunnableNode<SimpleState> node5 = new RunnableNode<>(
+        RunnableNodeImpl<SimpleState> node5 = new RunnableNodeImpl<>(
                 "node5",
                 RunnableNodeAction.noop()
         );
@@ -239,7 +239,7 @@ public class GraphCompileTest {
             (input, state) -> state.getUserByClass().computeIfAbsent("notStudent", v -> new ArrayList<>()).add(input)
     );
 
-    static RunnableNode<UserState> checkForInterrupt = new RunnableNode<>(
+    static RunnableNodeImpl<UserState> checkForInterrupt = new RunnableNodeImpl<>(
             "checkForInterrupt",
             state -> {
                 if (state.size < state.getTargetSize()) {
@@ -250,14 +250,14 @@ public class GraphCompileTest {
             }
     );
 
-    static RunnableNode<UserState> spyNode = new RunnableNode<>(
+    static RunnableNodeImpl<UserState> spyNode = new RunnableNodeImpl<>(
             "spyNode",
             state -> state.getUserByClass()
                     .computeIfAbsent("student", v -> new ArrayList<>())
                     .add(new User("spy", 100))
     );
 
-    static RunnableNode<UserState> amountCalc = new RunnableNode<>(
+    static RunnableNodeImpl<UserState> amountCalc = new RunnableNodeImpl<>(
             "amountCalc",
             state -> {
                 state.setAmountStudent(state.getUserByClass().get("student").size());
@@ -282,14 +282,14 @@ public class GraphCompileTest {
             (input, state) -> state.setCorrect(input)
     );
 
-    static RunnableNode<UserState> errorCorrectHandler = new RunnableNode<>(
+    static RunnableNodeImpl<UserState> errorCorrectHandler = new RunnableNodeImpl<>(
             "errorCorrectHandler",
             state -> {
                 throw new RuntimeException("result is not correct");
             }
     );
 
-    static RunnableNode<UserState> finish = new RunnableNode<>(
+    static RunnableNodeImpl<UserState> finish = new RunnableNodeImpl<>(
             "finish",
             RunnableNodeAction.noop()
     );

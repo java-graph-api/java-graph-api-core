@@ -9,7 +9,7 @@ import org.graph.api.core.model.Order;
 import org.graph.api.core.model.OrderState;
 import org.graph.api.core.node.ConsumerNode;
 import org.graph.api.core.node.SupplierNode;
-import org.graph.api.core.node.RunnableNode;
+import org.graph.api.core.node.RunnableNodeImpl;
 import org.graph.api.core.node.UnaryNode;
 import org.graph.api.core.node.action.ConsumerNodeAction;
 import org.graph.api.core.options.GraphOptions;
@@ -139,7 +139,7 @@ public class GraphTest {
     );
 
     // 9) finish
-    static RunnableNode<OrderState> finish = new RunnableNode<>(
+    static RunnableNodeImpl<OrderState> finish = new RunnableNodeImpl<>(
             "finish",
             state -> {
             }
