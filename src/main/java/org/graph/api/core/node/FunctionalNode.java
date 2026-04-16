@@ -6,7 +6,7 @@ import org.graph.api.core.node.action.NodeAction;
 import java.util.Objects;
 import java.util.UUID;
 
-public class FunctionalNode<I, O, S extends GraphState> implements Node<I, O, S> {
+public class FunctionalNode<I, O, S extends GraphState> implements TypedNode<I, O, S> {
 
     private final String name;
     private final NodeAction<I, O, S> nodeAction;

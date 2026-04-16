@@ -2,7 +2,7 @@ package org.graph.api.core;
 
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.node.Node;
+import org.graph.api.core.node.TypedNode;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.specification.RouteSpecification;
 import org.graph.api.core.route.specification.RouteSpecificationDefault;
@@ -36,7 +36,7 @@ public class GraphSpecification<S extends GraphState> {
         return this;
     }
 
-    public RouteSpecification<S> begin(Node<Void, ?, S> node) {
+    public RouteSpecification<S> begin(TypedNode<Void, ?, S> node) {
         return new RouteSpecificationDefault<>(options, memory, node, aspects);
     }
 }

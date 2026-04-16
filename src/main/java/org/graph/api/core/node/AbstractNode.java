@@ -4,7 +4,7 @@ import org.graph.api.core.GraphState;
 
 import java.util.UUID;
 
-public abstract class AbstractNode<I, O, S extends GraphState> implements Node<I, O, S> {
+public abstract class AbstractNode<I, O, S extends GraphState> implements TypedNode<I, O, S> {
 
    private final UUID id = UUID.randomUUID();
 

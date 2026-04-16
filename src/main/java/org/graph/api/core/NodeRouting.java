@@ -2,7 +2,7 @@ package org.graph.api.core;
 
 import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
-import org.graph.api.core.node.Node;
+import org.graph.api.core.node.TypedNode;
 import org.graph.api.core.node.factory.NodeMap;
 import org.graph.api.core.route.Route;
 
@@ -21,19 +21,19 @@ public class NodeRouting<S extends GraphState> {
         this.nodeMap = nodeMap;
     }
 
-    public Route<S> getRoute(Node<?, ?, S> node, Object output, S state) {
+    public Route<S> getRoute(TypedNode<?, ?, S> node, Object output, S state) {
         List<Route<S>> conditionalRoutes = getConditionalRoutes(node, output, state);
         return getRouteOrThrow(node, conditionalRoutes);
     }
 
-    public Node<?, ?, S> getNode(String nodeName) {
+    public TypedNode<?, ?, S> getNode(String nodeName) {
         if (nodeMap.containsKey(nodeName)) {
             return nodeMap.get(nodeName);
         }
         throw new GraphNodeNotFoundException(nodeName);
     }
 
-    public Node<?, ?, S> getBeginNode() {
+    public TypedNode<?, ?, S> getBeginNode() {
         var routes = this.routes.get(Route.Type.BEGIN.name());
         if (routes == null || routes.size() != 1) {
             throw GraphRoutingException.routeNotFound(Route.Type.BEGIN.name());
@@ -41,7 +41,7 @@ public class NodeRouting<S extends GraphState> {
         return routes.get(0).getTarget();
     }
 
-    private List<Route<S>> getConditionalRoutes(Node<?, ?, S> node, Object output, S state) {
+    private List<Route<S>> getConditionalRoutes(TypedNode<?, ?, S> node, Object output, S state) {
         return get(node.getName()).stream()
                 .filter(route -> route.test(output, state))
                 .toList();
@@ -51,7 +51,7 @@ public class NodeRouting<S extends GraphState> {
         return Objects.requireNonNullElse(routes.get(nodeName), Collections.emptyList());
     }
 
-    private Route<S> getRouteOrThrow(Node<?, ?, S> node, List<Route<S>> conditionalRoutes) {
+    private Route<S> getRouteOrThrow(TypedNode<?, ?, S> node, List<Route<S>> conditionalRoutes) {
         if (conditionalRoutes.isEmpty()) {
             throw GraphRoutingException.routeNotFound(node.getName());
         } else if (conditionalRoutes.size() > 1) {

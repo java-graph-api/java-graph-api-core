@@ -3,7 +3,7 @@ package org.graph.api.core.node.factory;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.ProcessingJoinPoint;
-import org.graph.api.core.node.Node;
+import org.graph.api.core.node.TypedNode;
 import org.graph.api.core.node.NodeInfo;
 import org.graph.api.core.node.action.NodeAction;
 import org.graph.api.core.options.GraphOptions;
@@ -24,7 +24,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    public <I, O> Node<I, O, S> createProxy(Node<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    public <I, O> TypedNode<I, O, S> createProxy(TypedNode<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
         if (target == null) {
             return null;
         }
@@ -49,9 +49,9 @@ public final class NodeProxyFactory<S extends GraphState> {
             return defaultMethods(target, method, args);
         };
 
-        return (Node<I, O, S>) Proxy.newProxyInstance(
+        return (TypedNode<I, O, S>) Proxy.newProxyInstance(
                 target.getClass().getClassLoader(),
-                new Class<?>[]{Node.class},
+                new Class<?>[]{TypedNode.class},
                 handler
         );
     }
@@ -60,7 +60,7 @@ public final class NodeProxyFactory<S extends GraphState> {
         return "call".equals(method.getName()) && method.getParameterCount() == 2;
     }
 
-    private <I, O> Object defaultMethods(Node<I, O, S> target, Method method, Object[] args) throws Throwable {
+    private <I, O> Object defaultMethods(TypedNode<I, O, S> target, Method method, Object[] args) throws Throwable {
         switch (method.getName()) {
             case "toString":
                 return target.toString();
@@ -87,7 +87,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    private <I, O, T extends GraphState> NodeAction<I, O, S> buildAspectChain(Node<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    private <I, O, T extends GraphState> NodeAction<I, O, S> buildAspectChain(TypedNode<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
         NodeAction<I, O, S> chain = target::call;
 
         for (int i = aspects.size() - 1; i >= 0; i--) {

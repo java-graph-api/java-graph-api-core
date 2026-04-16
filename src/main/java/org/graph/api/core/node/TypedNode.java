@@ -4,7 +4,7 @@ import org.graph.api.core.GraphState;
 
 import java.util.UUID;
 
-public interface Node<I, O, S extends GraphState> {
+public interface TypedNode<I, O, S extends GraphState> {
 
     String getName();
 

@@ -3,7 +3,7 @@ package org.graph.api.core;
 import lombok.Builder;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.SavePoint;
-import org.graph.api.core.node.Node;
+import org.graph.api.core.node.TypedNode;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
 import org.graph.api.core.memory.GraphStateMerger;
@@ -38,7 +38,7 @@ public final class GraphExecutor<S extends GraphState> {
     private S internalExecute(S state) {
         StartPoint<Object, Object, S> startPoint = loadStartNodeAndState(state);
 
-        Node<Object, Object, S> beginNode = startPoint.node();
+        TypedNode<Object, Object, S> beginNode = startPoint.node();
         state = startPoint.state();
 
         Object currentResult = nodeExecutor.complete(beginNode, null, state);
@@ -50,7 +50,7 @@ public final class GraphExecutor<S extends GraphState> {
         Route<S> route = nextRoute(beginNode, currentResult, state);
 
         while (!route.isEnd()) {
-            Node<Object, Object, S> currentNode = (Node<Object, Object, S>) route.getTarget();
+            TypedNode<Object, Object, S> currentNode = (TypedNode<Object, Object, S>) route.getTarget();
             currentResult = nodeExecutor.execute(currentNode, currentResult, state);
 
             if (state.isGraphInterrupted()) {
@@ -66,11 +66,11 @@ public final class GraphExecutor<S extends GraphState> {
     private <O> StartPoint<Object, Object, S> loadStartNodeAndState(S state) {
         return (StartPoint<Object, Object, S>) getSavePoint(state)
                 .map(sp -> StartPoint.<Object, O, S>builder()
-                        .node((Node<Object, O, S>) nodeRouting.getNode(sp.nodeName()))
+                        .node((TypedNode<Object, O, S>) nodeRouting.getNode(sp.nodeName()))
                         .state((S) GraphStateMerger.merge(sp.state(), state))
                         .build()
                 ).orElseGet(() -> StartPoint.<Object, O, S>builder()
-                        .node((Node<Object, O, S>) nodeRouting.getBeginNode())
+                        .node((TypedNode<Object, O, S>) nodeRouting.getBeginNode())
                         .state(state)
                         .build());
     }
@@ -82,7 +82,7 @@ public final class GraphExecutor<S extends GraphState> {
         return memory.get(options.getGraphName(), state.getSessionId());
     }
 
-    private Route<S> nextRoute(Node<Object, Object, S> node, Object currentResult, S state) {
+    private Route<S> nextRoute(TypedNode<Object, Object, S> node, Object currentResult, S state) {
         return nodeRouting.getRoute(node, currentResult, state);
     }
 
@@ -92,6 +92,6 @@ public final class GraphExecutor<S extends GraphState> {
     }
 
     @Builder
-    private record StartPoint<I, O, S extends GraphState>(Node<I, O, S> node, S state) {
+    private record StartPoint<I, O, S extends GraphState>(TypedNode<I, O, S> node, S state) {
     }
 }
