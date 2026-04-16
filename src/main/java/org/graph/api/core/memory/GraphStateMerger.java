@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GraphStateMerger {
 
+    // todo продумать структуру по аннотациям. внедрить аннотации для полей. использовать не только геттеры и сеттеры но и возможно другие методы
+
     private static final Map<Class<?>, Methods> cache = new ConcurrentHashMap<>();
 
     public static Object merge(Object source, Object target) {
