@@ -19,7 +19,7 @@ public class NodeFactory<S extends GraphState> {
         this.internalAspectProvider = new InternalAspectProvider(memory);
     }
 
-    public TypedNode<?, ?, S> createProxy(TypedNode<?, ?, S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    public TypedNode<?, ?, ? super S> createProxy(TypedNode<?, ?, ? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         var proxy = nodeProxyFactory.createProxy(target, internalAspectProvider.get());
         return nodeProxyFactory.createProxy(proxy, aspects);
     }

@@ -36,7 +36,7 @@ public class GraphSpecification<S extends GraphState> {
         return this;
     }
 
-    public RouteSpecification<S> begin(TypedNode<Void, ?, S> node) {
+    public RouteSpecification<S> begin(TypedNode<Void, ?, ? super S> node) {
         return new RouteSpecificationDefault<>(options, memory, node, aspects);
     }
 }

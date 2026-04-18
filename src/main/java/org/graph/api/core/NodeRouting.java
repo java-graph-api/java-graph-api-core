@@ -26,14 +26,14 @@ public class NodeRouting<S extends GraphState> {
         return getRouteOrThrow(node, conditionalRoutes);
     }
 
-    public TypedNode<?, ?, S> getNode(String nodeName) {
+    public TypedNode<?, ?, ? super S> getNode(String nodeName) {
         if (nodeMap.containsKey(nodeName)) {
             return nodeMap.get(nodeName);
         }
         throw new GraphNodeNotFoundException(nodeName);
     }
 
-    public TypedNode<?, ?, S> getBeginNode() {
+    public TypedNode<?, ?, ? super S> getBeginNode() {
         var routes = this.routes.get(Route.Type.BEGIN.name());
         if (routes == null || routes.size() != 1) {
             throw GraphRoutingException.routeNotFound(Route.Type.BEGIN.name());

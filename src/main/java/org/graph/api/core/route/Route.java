@@ -8,20 +8,20 @@ import org.graph.api.core.route.conditional.RouteConditional;
 
 public class Route<S extends GraphState> {
 
-    private final TypedNode<?, ?, S> source;
+    private final TypedNode<?, ?, ? super S> source;
     @Getter
-    private final TypedNode<?, ?, S> target;
-    private final RouteConditional<?, S> conditional;
+    private final TypedNode<?, ?, ? super S> target;
+    private final RouteConditional<?, ? super S> conditional;
     private final Type type;
 
-    Route(TypedNode<?, ?, S> source, TypedNode<?, ?, S> target, RouteConditional<?, S> conditional, Type type) {
+    Route(TypedNode<?, ?, ? super S> source, TypedNode<?, ?, ? super S> target, RouteConditional<?, ? super S> conditional, Type type) {
         this.source = source;
         this.target = target;
         this.conditional = conditional;
         this.type = type;
     }
 
-    public TypedNode<?, ?, S> getSource() {
+    public TypedNode<?, ?, ? super S> getSource() {
         if (source == null) {
             throw GraphRoutingException.routeNotFound(target.getName());
         }

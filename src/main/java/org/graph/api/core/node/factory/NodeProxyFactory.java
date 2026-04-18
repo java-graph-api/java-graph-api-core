@@ -24,7 +24,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    public <I, O> TypedNode<I, O, S> createProxy(TypedNode<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    public <I, O> TypedNode<I, O, ? super S> createProxy(TypedNode<I, O, ? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         if (target == null) {
             return null;
         }
@@ -60,7 +60,7 @@ public final class NodeProxyFactory<S extends GraphState> {
         return "call".equals(method.getName()) && method.getParameterCount() == 2;
     }
 
-    private <I, O> Object defaultMethods(TypedNode<I, O, S> target, Method method, Object[] args) throws Throwable {
+    private <I, O> Object defaultMethods(TypedNode<I, O, ? super S> target, Method method, Object[] args) throws Throwable {
         switch (method.getName()) {
             case "toString":
                 return target.toString();
@@ -87,7 +87,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    private <I, O, T extends GraphState> NodeAction<I, O, S> buildAspectChain(TypedNode<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    private <I, O, T extends GraphState> NodeAction<I, O, S> buildAspectChain(TypedNode<I, O, ? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         NodeAction<I, O, S> chain = target::call;
 
         for (int i = aspects.size() - 1; i >= 0; i--) {

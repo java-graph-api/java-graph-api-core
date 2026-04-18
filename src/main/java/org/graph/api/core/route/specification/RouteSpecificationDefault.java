@@ -31,7 +31,7 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     private final List<NodeAspect<? extends GraphState>> aspects;
     private final NodeFactory<S> nodeFactory;
 
-    public RouteSpecificationDefault(GraphOptions options, GraphMemory memory, TypedNode<Void, ?, S> beginNode, List<NodeAspect<? extends GraphState>> aspects) {
+    public RouteSpecificationDefault(GraphOptions options, GraphMemory memory, TypedNode<Void, ?, ? super S> beginNode, List<NodeAspect<? extends GraphState>> aspects) {
         this.aspects = aspects;
         this.memory = memory;
         this.options = options;
@@ -40,49 +40,49 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     }
 
     @Override
-    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, S> source, TypedNode<R, RR, S> target) {
+    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target) {
         return route(source, target, (output, state) -> true, Route.Type.DEFAULT);
     }
 
     @Override
-    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, S> source, TypedNode<R, RR, S> target, RouteConditional<R, S> conditional) {
+    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target, RouteConditional<R, ? super S> conditional) {
         return route(source, target, conditional, Route.Type.CONDITIONAL);
     }
 
     @Override
-    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, S> source, TypedNode<R, RR, S> target, RouteStateConditional<S> stateConditional) {
+    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target, RouteStateConditional<? super S> stateConditional) {
         return route(source, target, RouteConditional.ofState(stateConditional), Route.Type.CONDITIONAL);
     }
 
     @Override
-    public GraphExecutor<S> end(TypedNode<?, Void, S> target) {
+    public GraphExecutor<S> end(TypedNode<?, Void, ? super S> target) {
         addEndNode(target);
         return new GraphExecutor<>(getRoutes(), memory, options);
     }
 
     @Override
-    public GraphExecutor<S> end(Collection<ConsumerNode<?, S>> targets) {
+    public GraphExecutor<S> end(Collection<ConsumerNode<?, ? super S>> targets) {
         targets.forEach(this::addEndNode);
         return new GraphExecutor<>(getRoutes(), memory, options);
     }
 
-    private <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, S> source, TypedNode<R, RR, S> target, RouteConditional<R, S> conditional, Route.Type type) {
+    private <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target, RouteConditional<R, ? super S> conditional, Route.Type type) {
         var schema = routeFactory.create(source.getName(), target.getName(), conditional, type);
         add(target, schema);
         return this;
     }
 
-    private void addEndNode(TypedNode<?, Void, S> endNode) {
+    private void addEndNode(TypedNode<?, Void, ? super S> endNode) {
         var schema = routeFactory.end(endNode.getName());
         add(endNode, schema);
     }
 
-    private void addBeginNode(TypedNode<?, ?, S> beginNode) {
+    private void addBeginNode(TypedNode<?, ?, ? super S> beginNode) {
         var schema = routeFactory.begin(beginNode.getName());
         add(beginNode, schema);
     }
 
-    private void add(TypedNode<?, ?, S> node, RouteSchema schema) {
+    private void add(TypedNode<?, ?, ? super S> node, RouteSchema schema) {
         addSchema(schema);
         addNodeToMap(node);
     }
@@ -91,11 +91,11 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
         this.schemas.add(schema);
     }
 
-    private void addNodeToMap(TypedNode<?, ?, S> node) {
+    private void addNodeToMap(TypedNode<?, ?, ? super S> node) {
         this.nodeMap.put(node.getName(), createNodeProxy(node));
     }
 
-    private TypedNode<?, ?, S> createNodeProxy(TypedNode<?, ?, S> target) {
+    private TypedNode<?, ?, ? super S> createNodeProxy(TypedNode<?, ?, ? super S> target) {
         return nodeFactory.createProxy(target, aspects);
     }
 

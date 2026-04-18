@@ -8,9 +8,9 @@ import java.util.Map;
 
 public class NodeMap<S extends GraphState> {
 
-    private final Map<String, TypedNode<?, ?, S>> nodeMap = new HashMap<>();
+    private final Map<String, TypedNode<?, ?, ? super S>> nodeMap = new HashMap<>();
 
-    public void put(String key, TypedNode<?, ?, S> value) {
+    public void put(String key, TypedNode<?, ?, ? super S> value) {
         if (this.containsKey(key)) {
             var thisValue = this.get(key);
             if (!thisValue.getId().equals(value.getId())) {
@@ -21,7 +21,7 @@ public class NodeMap<S extends GraphState> {
         }
     }
 
-    public TypedNode<?, ?, S> get(String key) {
+    public TypedNode<?, ?, ? super S> get(String key) {
         return nodeMap.get(key);
     }
 
