@@ -6,12 +6,16 @@ import org.graph.api.core.exception.TooManyNodeCallException;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.GraphMemoryDefault;
 import org.graph.api.core.memory.SavePoint;
+import org.graph.api.core.merge.StateMergeStrategy;
+import org.graph.api.core.merge.UseIncomingStateStrategy;
+import org.graph.api.core.merge.UseSavedStateStrategy;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -210,6 +214,133 @@ class GraphExecutorTest {
         assertNotEquals(firstExecutionId, resumedState.getExecutionId());
     }
 
+
+    @Test
+    void shouldUseSavedStateStrategyDuringResume() {
+        GraphMemory memory = memoryWithSavepoint("merge-use-saved", "start", mergeState(10, 1, "saved"));
+
+        Node<MergeState> start = node("start", s -> s.step += 1);
+        Node<MergeState> end = node("end", s -> s.step += 1);
+
+        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+                .options(options("merge-use-saved"))
+                .memory(memory)
+                .mergeStrategy(new UseSavedStateStrategy<>())
+                .begin(start)
+                .route(start, end)
+                .end(end);
+
+        MergeState result = executor.execute(mergeState(999, 5, "incoming"), "merge-use-saved-session");
+
+        assertEquals(10, result.value);
+        assertEquals("saved", result.comment);
+    }
+
+    @Test
+    void shouldUseIncomingStateStrategyDuringResume() {
+        GraphMemory memory = memoryWithSavepoint("merge-use-incoming", "start", mergeState(10, 1, "saved"));
+
+        Node<MergeState> start = node("start", s -> s.step += 1);
+        Node<MergeState> end = node("end", s -> s.step += 1);
+
+        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+                .options(options("merge-use-incoming"))
+                .memory(memory)
+                .mergeStrategy(new UseIncomingStateStrategy<>())
+                .begin(start)
+                .route(start, end)
+                .end(end);
+
+        MergeState result = executor.execute(mergeState(999, 5, "incoming"), "merge-use-incoming-session");
+
+        assertEquals(999, result.value);
+        assertEquals("incoming", result.comment);
+    }
+
+    @Test
+    void shouldUseCustomMergeStrategyDuringResume() {
+        GraphMemory memory = memoryWithSavepoint("merge-custom", "start", mergeState(10, 1, "saved"));
+
+        Node<MergeState> start = node("start", s -> s.step += 1);
+        Node<MergeState> end = node("end", s -> s.step += 1);
+
+        StateMergeStrategy<MergeState> custom = (saved, incoming) -> {
+            MergeState merged = new MergeState();
+            merged.step = saved.step;
+            merged.value = saved.value;
+            merged.comment = incoming.comment;
+            return merged;
+        };
+
+        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+                .options(options("merge-custom"))
+                .memory(memory)
+                .mergeStrategy(custom)
+                .begin(start)
+                .route(start, end)
+                .end(end);
+
+        MergeState result = executor.execute(mergeState(999, 5, "incoming"), "merge-custom-session");
+
+        assertEquals(10, result.value);
+        assertEquals("incoming", result.comment);
+    }
+
+    @Test
+    void shouldWireMergeStrategyFromGraphSpecificationToExecutor() {
+        GraphMemory memory = memoryWithSavepoint("merge-wiring", "start", mergeState(1, 2, "saved"));
+        AtomicInteger mergeCalls = new AtomicInteger(0);
+
+        StateMergeStrategy<MergeState> strategy = (saved, incoming) -> {
+            mergeCalls.incrementAndGet();
+            return incoming;
+        };
+
+        Node<MergeState> start = node("start", s -> s.step += 1);
+        Node<MergeState> end = node("end", s -> s.step += 1);
+
+        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+                .options(options("merge-wiring"))
+                .memory(memory)
+                .mergeStrategy(strategy)
+                .begin(start)
+                .route(start, end)
+                .end(end);
+
+        executor.execute(mergeState(2, 4, "incoming"), "merge-wiring-session");
+
+        assertEquals(1, mergeCalls.get());
+    }
+
+
+    private static GraphMemory memoryWithSavepoint(String graphName, String nodeName, GraphState state) {
+        return new GraphMemory() {
+            @Override
+            public void put(SavePoint savePoint) {
+            }
+
+            @Override
+            public Optional<SavePoint> get(String requestedGraphName, String sessionId) {
+                return Optional.of(
+                        SavePoint.builder()
+                                .graphName(graphName)
+                                .sessionId(sessionId)
+                                .nodeName(nodeName)
+                                .state(state)
+                                .build()
+                );
+            }
+        };
+    }
+
+    private static MergeState mergeState(int value, int step, String comment) {
+        MergeState state = new MergeState();
+        state.value = value;
+        state.step = step;
+        state.comment = comment;
+        return state;
+    }
+
     private static GraphOptions options(String name) {
         return GraphOptions.builder()
                 .graphName(name)
@@ -272,6 +403,12 @@ class GraphExecutorTest {
 
     private static final class LoopState extends GraphState implements Serializable {
         private int hits;
+    }
+
+    private static final class MergeState extends GraphState implements Serializable {
+        private int value;
+        private int step;
+        private String comment;
     }
 
 }
