@@ -17,7 +17,7 @@ public final class GraphExecutor<S extends GraphState> {
     private final GraphMemory memory;
     private final GraphOptions options;
     private final NodeRouting<S> nodeRouting;
-    private final NodeExecutor nodeExecutor = new NodeExecutor();
+    private final NodeExecutor<S> nodeExecutor = new NodeExecutor<>();
 
     public GraphExecutor(NodeRouting<S> nodeRouting, GraphMemory memory, GraphOptions options) {
         this.memory = memory;
@@ -41,7 +41,7 @@ public final class GraphExecutor<S extends GraphState> {
         Node<S> beginNode = startPoint.node();
         state = startPoint.state();
 
-        Object currentResult = nodeExecutor.complete(beginNode, null, state);
+        nodeExecutor.complete(beginNode, state);
 
         if (state.isGraphInterrupted()) {
             return state;
@@ -51,7 +51,7 @@ public final class GraphExecutor<S extends GraphState> {
 
         while (!route.isEnd()) {
             Node<S> currentNode = (Node<S>) route.getTarget();
-            currentResult = nodeExecutor.execute(currentNode, currentResult, state);
+            nodeExecutor.execute(currentNode, state);
 
             if (state.isGraphInterrupted()) {
                 return state;

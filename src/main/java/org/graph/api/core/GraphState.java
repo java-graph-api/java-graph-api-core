@@ -10,7 +10,7 @@ public abstract class GraphState extends NodeCallState {
     private String sessionId;
     private final UUID executionId = UUID.randomUUID();
 
-    public final UUID getExecutionId() {
+    public final UUID getExecutionId() { // todo test
         return executionId;
     }
 
