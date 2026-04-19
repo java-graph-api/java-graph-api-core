@@ -1,8 +1,9 @@
-package org.graph.api.core;
+package org.graph.api.core.memory;
 
-import org.graph.api.core.memory.GraphMemoryDefault;
+import org.graph.api.core.*;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -47,7 +48,7 @@ class GraphMemoryTest {
         TestMemoryState first = new TestMemoryState();
         TestMemoryState interrupted = executor.execute(first, "session-a");
 
-        assertEquals(ExecutorStatus.INTERRUPT, interrupted.getExecutorStatus());
+        Assertions.assertEquals(ExecutorStatus.INTERRUPT, interrupted.getExecutorStatus());
         assertEquals(11, interrupted.getValue());
         assertEquals(List.of("start", "checkpoint"), interrupted.getTrace());
 
