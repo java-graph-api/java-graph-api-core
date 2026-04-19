@@ -5,7 +5,6 @@ import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.ProcessingJoinPoint;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.node.NodeInfo;
-import org.graph.api.core.node.action.NodeAction;
 import org.graph.api.core.options.GraphOptions;
 
 import java.lang.reflect.InvocationHandler;
@@ -14,6 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class NodeProxyFactory<S extends GraphState> {
 
@@ -42,8 +42,8 @@ public final class NodeProxyFactory<S extends GraphState> {
                 I input = (I) args[0];
                 S state = (S) args[1];
 
-                NodeAction<S> chain = buildAspectChain(target, sortedAspects);
-                chain.action(state);
+                Consumer<S> chain = buildAspectChain(target, sortedAspects);
+                chain.accept(state);
             }
 
             return defaultMethods(target, method, args);
@@ -87,18 +87,18 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    private <I, O, T extends GraphState> NodeAction<S> buildAspectChain(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
-        NodeAction<S> chain = target::call;
+    private <I, O, T extends GraphState> Consumer<S> buildAspectChain(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
+        Consumer<S> chain = target::call;
 
         for (int i = aspects.size() - 1; i >= 0; i--) {
             NodeAspect<T> aspect = (NodeAspect<T>) aspects.get(i);
-            NodeAction<S> next = chain;
+            Consumer<S> next = chain;
 
             chain = (state) -> {
                 NodeInfo nodeInfo = new NodeInfo(target.getName(), target.callLimit());
                 //noinspection unchecked
                 T aspectState = (T) state;
-                ProcessingJoinPoint<T> joinPoint = new ProcessingJoinPoint<>(aspectState, options, nodeInfo, () -> next.action(state));
+                ProcessingJoinPoint<T> joinPoint = new ProcessingJoinPoint<>(aspectState, options, nodeInfo, () -> next.accept(state));
                 aspect.before(joinPoint);
                 aspect.around(joinPoint);
                 aspect.after(joinPoint);
