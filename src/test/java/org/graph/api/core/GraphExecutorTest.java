@@ -75,12 +75,13 @@ class GraphExecutorTest {
     @Test
     void shouldThrowTooManyNodeCallExceptionForInfiniteLoop() {
         Node<LoopState> loop = node("loop", s -> s.hits += 1, 3);
+        Node<LoopState> finish = node("finish", s -> s.hits += 1000);
 
         GraphExecutor<LoopState> executor = new GraphSpecification<LoopState>()
                 .options(options("loop-guard"))
                 .begin(loop)
                 .route(loop, loop, s -> true)
-                .end(loop);
+                .end(finish);
 
         TooManyNodeCallException exception = assertThrows(
                 TooManyNodeCallException.class,
