@@ -5,7 +5,7 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.node.Node;
 
-public class Route<S extends GraphState> {
+public final class Route<S extends GraphState> {
 
     private final Node<? super S> source;
     @Getter
@@ -20,7 +20,15 @@ public class Route<S extends GraphState> {
         this.type = type;
     }
 
-    public Node<? super S> getSource() {
+    public String getSourceNodeName() {
+        return source.getName();
+    }
+
+    public String getTargetNodeName() {
+        return target.getName();
+    }
+
+    Node<? super S> getSource() {
         if (source == null) {
             throw GraphRoutingException.routeNotFound(target.getName());
         }

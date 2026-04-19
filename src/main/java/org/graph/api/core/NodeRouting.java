@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class NodeRouting<S extends GraphState> {
+public final class NodeRouting<S extends GraphState> {
 
     private final Map<String, List<Route<S>>> routes;
     private final NodeMap<S> nodeMap;

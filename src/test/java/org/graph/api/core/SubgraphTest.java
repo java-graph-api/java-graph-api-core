@@ -1,5 +1,7 @@
 package org.graph.api.core;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.GraphMemoryDefault;
 import org.graph.api.core.node.Node;
@@ -235,36 +237,17 @@ class SubgraphTest {
         }
     }
 
+    @Setter
+    @Getter
     public static final class MainState extends GraphState implements Serializable {
         private int counter;
         private int subStep;
         private List<String> trace = new ArrayList<>();
 
-        public int getCounter() {
-            return counter;
-        }
-
-        public void setCounter(int counter) {
-            this.counter = counter;
-        }
-
-        public int getSubStep() {
-            return subStep;
-        }
-
-        public void setSubStep(int subStep) {
-            this.subStep = subStep;
-        }
-
-        public List<String> getTrace() {
-            return trace;
-        }
-
-        public void setTrace(List<String> trace) {
-            this.trace = trace;
-        }
     }
 
+    @Setter
+    @Getter
     public static final class NestedState extends GraphState implements Serializable {
         private int value;
         private List<String> events = new ArrayList<>();
@@ -273,20 +256,5 @@ class SubgraphTest {
             this.value = value;
         }
 
-        public int getValue() {
-            return value;
-        }
-
-        public void setValue(int value) {
-            this.value = value;
-        }
-
-        public List<String> getEvents() {
-            return events;
-        }
-
-        public void setEvents(List<String> events) {
-            this.events = events;
-        }
     }
 }
