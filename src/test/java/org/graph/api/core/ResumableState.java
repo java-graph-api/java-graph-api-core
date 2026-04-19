@@ -1,8 +1,13 @@
 package org.graph.api.core;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serial;
 import java.io.Serializable;
 
+@Setter
+@Getter
 public class ResumableState extends GraphState implements Serializable {
 
     @Serial
@@ -10,11 +15,4 @@ public class ResumableState extends GraphState implements Serializable {
 
     private int step;
 
-    public int getStep() {
-        return step;
-    }
-
-    public void setStep(int step) {
-        this.step = step;
-    }
 }
