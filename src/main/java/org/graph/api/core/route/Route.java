@@ -4,17 +4,16 @@ import lombok.Getter;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.node.Node;
-import org.graph.api.core.route.conditional.RouteConditional;
 
 public class Route<S extends GraphState> {
 
     private final Node<? super S> source;
     @Getter
     private final Node<? super S> target;
-    private final RouteConditional<?, ? super S> conditional;
+    private final RouteConditional<? super S> conditional;
     private final Type type;
 
-    Route(Node<? super S> source, Node<? super S> target, RouteConditional<?, ? super S> conditional, Type type) {
+    Route(Node<? super S> source, Node<? super S> target, RouteConditional<? super S> conditional, Type type) {
         this.source = source;
         this.target = target;
         this.conditional = conditional;
@@ -28,9 +27,8 @@ public class Route<S extends GraphState> {
         return source;
     }
 
-    public <T> boolean test(T output, S state) {
-        //noinspection unchecked
-        return ((RouteConditional<T, S>) conditional).test(output, state);
+    public boolean test(S state) {
+        return conditional.test(state);
     }
 
     public boolean isBegin() {

@@ -4,8 +4,8 @@ import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
-import org.graph.api.core.route.specification.RouteSpecification;
-import org.graph.api.core.route.specification.RouteSpecificationDefault;
+import org.graph.api.core.route.RouteSpecification;
+import org.graph.api.core.route.RouteSpecificationDefault;
 
 import java.util.ArrayList;
 import java.util.List;

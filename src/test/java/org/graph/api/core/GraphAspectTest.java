@@ -3,6 +3,7 @@ package org.graph.api.core;
 import org.graph.api.core.aspect.LoggingAspect;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.ProcessingJoinPoint;
+import org.graph.api.core.node.AbstractNode;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 import org.junit.jupiter.api.Test;
@@ -174,7 +175,7 @@ class GraphAspectTest {
         }
     }
 
-    private static final class TestNode<S extends GraphState> implements Node<S> {
+    private static final class TestNode<S extends GraphState> extends AbstractNode<S> {
 
         private final String name;
         private final Consumer<S> action;

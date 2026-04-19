@@ -21,8 +21,8 @@ public class NodeRouting<S extends GraphState> {
         this.nodeMap = nodeMap;
     }
 
-    public Route<S> getRoute(Node<S> node, Object output, S state) {
-        List<Route<S>> conditionalRoutes = getConditionalRoutes(node, output, state);
+    public Route<S> getRoute(Node<S> node, S state) {
+        List<Route<S>> conditionalRoutes = getConditionalRoutes(node, state);
         return getRouteOrThrow(node, conditionalRoutes);
     }
 
@@ -41,9 +41,9 @@ public class NodeRouting<S extends GraphState> {
         return routes.get(0).getTarget();
     }
 
-    private List<Route<S>> getConditionalRoutes(Node<S> node, Object output, S state) {
+    private List<Route<S>> getConditionalRoutes(Node<S> node, S state) {
         return get(node.getName()).stream()
-                .filter(route -> route.test(output, state))
+                .filter(route -> route.test(state))
                 .toList();
     }
 

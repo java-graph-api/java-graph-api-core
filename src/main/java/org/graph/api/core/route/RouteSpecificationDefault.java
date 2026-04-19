@@ -1,4 +1,4 @@
-package org.graph.api.core.route.specification;
+package org.graph.api.core.route;
 
 import org.graph.api.core.GraphExecutor;
 import org.graph.api.core.GraphState;
@@ -9,10 +9,6 @@ import org.graph.api.core.node.Node;
 import org.graph.api.core.node.factory.NodeFactory;
 import org.graph.api.core.node.factory.NodeMap;
 import org.graph.api.core.options.GraphOptions;
-import org.graph.api.core.route.Route;
-import org.graph.api.core.route.RouteFactory;
-import org.graph.api.core.route.RouteSchema;
-import org.graph.api.core.route.conditional.RouteStateConditional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +39,7 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     }
 
     @Override
-    public RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteStateConditional<? super S> stateConditional) {
+    public RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteConditional<? super S> stateConditional) {
         return route(source, target, stateConditional, Route.Type.CONDITIONAL);
     }
 
@@ -59,7 +55,7 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
         return new GraphExecutor<>(getRoutes(), memory, options);
     }
 
-    private RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteStateConditional<? super S> conditional, Route.Type type) {
+    private RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteConditional<? super S> conditional, Route.Type type) {
         var schema = routeFactory.create(source.getName(), target.getName(), conditional, type);
         add(target, schema);
         return this;

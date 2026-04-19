@@ -36,7 +36,7 @@ public final class GraphExecutor<S extends GraphState> {
     }
 
     private S internalExecute(S state) {
-        StartPoint<Object, Object, S> startPoint = loadStartNodeAndState(state);
+        StartPoint<S> startPoint = loadStartNodeAndState(state);
 
         Node<S> beginNode = startPoint.node();
         state = startPoint.state();
@@ -47,7 +47,7 @@ public final class GraphExecutor<S extends GraphState> {
             return state;
         }
 
-        Route<S> route = nextRoute(beginNode, currentResult, state);
+        Route<S> route = nextRoute(beginNode, state);
 
         while (!route.isEnd()) {
             Node<S> currentNode = (Node<S>) route.getTarget();
@@ -57,19 +57,19 @@ public final class GraphExecutor<S extends GraphState> {
                 return state;
             }
 
-            route = nextRoute(currentNode, currentResult, state);
+            route = nextRoute(currentNode, state);
         }
 
         return complete(state);
     }
 
-    private <O> StartPoint<Object, Object, S> loadStartNodeAndState(S state) {
-        return (StartPoint<Object, Object, S>) getSavePoint(state)
-                .map(sp -> StartPoint.<Object, O, S>builder()
+    private StartPoint<S> loadStartNodeAndState(S state) {
+        return getSavePoint(state)
+                .map(sp -> StartPoint.<S>builder()
                         .node((Node<S>) nodeRouting.getNode(sp.nodeName()))
                         .state((S) GraphStateMerger.merge(sp.state(), state))
                         .build()
-                ).orElseGet(() -> StartPoint.<Object, O, S>builder()
+                ).orElseGet(() -> StartPoint.<S>builder()
                         .node((Node<S>) nodeRouting.getBeginNode())
                         .state(state)
                         .build());
@@ -82,8 +82,8 @@ public final class GraphExecutor<S extends GraphState> {
         return memory.get(options.getGraphName(), state.getSessionId());
     }
 
-    private Route<S> nextRoute(Node<S> node, Object currentResult, S state) {
-        return nodeRouting.getRoute(node, currentResult, state);
+    private Route<S> nextRoute(Node<S> node, S state) {
+        return nodeRouting.getRoute(node, state);
     }
 
     private S complete(S state) {
@@ -92,6 +92,6 @@ public final class GraphExecutor<S extends GraphState> {
     }
 
     @Builder
-    private record StartPoint<I, O, S extends GraphState>(Node<S> node, S state) {
+    private record StartPoint<S extends GraphState>(Node<S> node, S state) {
     }
 }
