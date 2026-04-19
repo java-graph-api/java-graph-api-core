@@ -59,6 +59,9 @@ public class NodeRouting<S extends GraphState> {
                 if (conditionalRoutes.get(0).isConditional() && conditionalRoutes.get(1).isDefault()) {
                     return conditionalRoutes.get(0);
                 }
+                if (conditionalRoutes.get(1).isConditional() && conditionalRoutes.get(0).isDefault()) {
+                    return conditionalRoutes.get(1);
+                }
             }
             throw GraphRoutingException.multipleRoutesFound(node.getName(), conditionalRoutes);
         } else {

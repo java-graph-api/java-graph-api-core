@@ -102,7 +102,7 @@ public class GraphRoutingTest {
                 () -> {
                     var executor = graphSpecification
                             .begin(node1)
-                            .route(node1, node3)
+                            .route(node1, node3, state -> !state.isEvenNumber())
                             .route(node1, node2, state -> !state.isEvenNumber())
                             .route(node2, node4)
                             .route(node4, node3, (output, state) -> output % 2 == 0)
