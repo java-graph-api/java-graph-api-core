@@ -1,4 +1,4 @@
-package org.graph.api.core.memory;
+package org.graph.api.core.memory.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,10 +7,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SavePointReadInclude {
-    boolean getter() default false;
+public @interface SavePointExclude {
+    boolean getter() default true;
 
     boolean setter() default true;
-
-    String key() default "";
 }

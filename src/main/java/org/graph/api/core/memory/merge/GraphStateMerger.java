@@ -1,4 +1,7 @@
-package org.graph.api.core.memory;
+package org.graph.api.core.memory.merge;
+
+import org.graph.api.core.memory.ClassMetadata;
+import org.graph.api.core.memory.PropertyMetadata;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;

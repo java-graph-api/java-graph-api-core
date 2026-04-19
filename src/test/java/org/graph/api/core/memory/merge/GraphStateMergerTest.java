@@ -1,11 +1,16 @@
-package org.graph.api.core.memory;
+package org.graph.api.core.memory.merge;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.graph.api.core.memory.ClassMetadata;
+import org.graph.api.core.memory.PropertyMetadata;
+import org.graph.api.core.memory.annotation.SavePointExclude;
+import org.graph.api.core.memory.annotation.SavePointIgnore;
+import org.graph.api.core.memory.annotation.SavePointReadInclude;
+import org.graph.api.core.memory.annotation.SavePointWriteInclude;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GraphStateMergerTest {
 
@@ -132,68 +137,45 @@ class GraphStateMergerTest {
         assertThrows(IllegalStateException.class, () -> AnnotationResolver.resolveClassMetadata(DuplicateReadKeyState.class));
     }
 
+    @Setter
+    @Getter
     private static class DefaultState {
         private String name;
         private boolean active;
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public boolean isActive() {
-            return active;
-        }
-
-        public void setActive(boolean active) {
-            this.active = active;
-        }
     }
 
+    @Setter
     private static class GetterExcludedState {
         private String value;
 
-        @SavePointExclude(getter = true, setter = false)
+        @SavePointExclude(setter = false)
         public String getValue() {
             return value;
         }
 
-        public void setValue(String value) {
-            this.value = value;
-        }
     }
 
+    @Getter
     private static class SetterExcludedState {
         private String value;
 
-        public String getValue() {
-            return value;
-        }
-
-        @SavePointExclude(getter = false, setter = true)
+        @SavePointExclude(getter = false)
         public void setValue(String value) {
             this.value = value;
         }
     }
 
+    @Setter
+    @Getter
     private static class FieldExcludedState {
         @SavePointExclude
         private String value;
 
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
     }
 
     private static class MethodPriorityOverFieldState {
-        @SavePointExclude(getter = true, setter = true)
+        @SavePointExclude
         private String value;
 
         @SavePointExclude(getter = false, setter = false)
@@ -207,6 +189,8 @@ class GraphStateMergerTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    @Setter
     private static class IgnoreState {
         private String value;
 
@@ -215,37 +199,24 @@ class GraphStateMergerTest {
             return value;
         }
 
-        public void setValue(String value) {
-            this.value = value;
-        }
     }
 
+    @Setter
+    @Getter
     private static class IncludeFieldState {
         @SavePointWriteInclude(key = "player_name")
         @SavePointReadInclude(key = "player_name")
         private String name;
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 
+    @Setter
+    @Getter
     private static class DefaultKeyIncludeState {
         @SavePointWriteInclude
         @SavePointReadInclude
         private String name;
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 
     private static class MethodKeyPriorityState {
@@ -253,17 +224,21 @@ class GraphStateMergerTest {
         @SavePointReadInclude(key = "field_key")
         private String value;
 
+        @SuppressWarnings("unused")
         @SavePointWriteInclude(key = "getter_key")
         public String getValue() {
             return value;
         }
 
+        @SuppressWarnings("unused")
         @SavePointReadInclude(key = "setter_key")
         public void setValue(String value) {
             this.value = value;
         }
     }
 
+    @Setter
+    @Getter
     private static class DuplicateWriteKeyState {
         @SavePointWriteInclude(key = "hp")
         private int currentHp;
@@ -271,40 +246,20 @@ class GraphStateMergerTest {
         @SavePointWriteInclude(key = "hp")
         private int maxHp;
 
-        public int getCurrentHp() {
-            return currentHp;
-        }
-
-        public void setCurrentHp(int currentHp) {
-            this.currentHp = currentHp;
-        }
-
-        public int getMaxHp() {
-            return maxHp;
-        }
-
-        public void setMaxHp(int maxHp) {
-            this.maxHp = maxHp;
-        }
     }
 
+    @Getter
     private static class DuplicateReadKeyState {
         private int currentHp;
         private int maxHp;
 
-        public int getCurrentHp() {
-            return currentHp;
-        }
-
+        @SuppressWarnings("unused")
         @SavePointReadInclude(key = "hp")
         public void setCurrentHp(int currentHp) {
             this.currentHp = currentHp;
         }
 
-        public int getMaxHp() {
-            return maxHp;
-        }
-
+        @SuppressWarnings("unused")
         @SavePointReadInclude(key = "hp")
         public void setMaxHp(int maxHp) {
             this.maxHp = maxHp;
