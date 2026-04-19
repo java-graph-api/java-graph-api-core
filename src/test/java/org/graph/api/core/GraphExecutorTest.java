@@ -79,7 +79,7 @@ class GraphExecutorTest {
         GraphExecutor<LoopState> executor = new GraphSpecification<LoopState>()
                 .options(options("loop-guard"))
                 .begin(loop)
-                .route(loop, loop)
+                .route(loop, loop, s -> true)
                 .end(loop);
 
         TooManyNodeCallException exception = assertThrows(

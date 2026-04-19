@@ -17,7 +17,7 @@ public class RouteFactory<S extends GraphState> {
                 .map(schema -> new Route<>(
                                 nodeMap.get(schema.source()),
                                 nodeMap.get(schema.target()),
-                                (RouteConditional<?, S>) schema.conditional(),
+                                RouteConditional.ofState((RouteStateConditional<S>) schema.conditional()),
                                 schema.type()
                         )
                 ).collect(Collectors.groupingBy(route ->
