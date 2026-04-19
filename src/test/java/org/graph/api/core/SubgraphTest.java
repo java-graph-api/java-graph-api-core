@@ -235,7 +235,7 @@ class SubgraphTest {
         }
     }
 
-    private static final class MainState extends GraphState implements Serializable {
+    public static final class MainState extends GraphState implements Serializable {
         private int counter;
         private int subStep;
         private List<String> trace = new ArrayList<>();
@@ -265,7 +265,7 @@ class SubgraphTest {
         }
     }
 
-    private static final class NestedState extends GraphState implements Serializable {
+    public static final class NestedState extends GraphState implements Serializable {
         private int value;
         private List<String> events = new ArrayList<>();
 
