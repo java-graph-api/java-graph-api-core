@@ -4,7 +4,7 @@ import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.exception.TooManyNodeCallException;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.memory.GraphMemoryDefault;
+import org.graph.api.core.memory.InMemoryGraphMemory;
 import org.graph.api.core.memory.SavePoint;
 import org.graph.api.core.merge.StateMergeStrategy;
 import org.graph.api.core.merge.UseIncomingStateStrategy;
@@ -177,7 +177,7 @@ class GraphExecutorTest {
 
     @Test
     void shouldKeepSessionIdAndChangeExecutionIdAfterInterruptAndResume() {
-        GraphMemory memory = new GraphMemoryDefault();
+        GraphMemory memory = new InMemoryGraphMemory();
 
         Node<ResumableState> start = node("start", s -> {
             if (s.getStep() == 0) {

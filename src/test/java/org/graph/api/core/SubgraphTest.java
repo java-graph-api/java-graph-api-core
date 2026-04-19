@@ -3,7 +3,7 @@ package org.graph.api.core;
 import lombok.Getter;
 import lombok.Setter;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.memory.GraphMemoryDefault;
+import org.graph.api.core.memory.InMemoryGraphMemory;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.subgraph.InnerSubgraph;
@@ -140,7 +140,7 @@ class SubgraphTest {
 
     @Test
     void shouldResumeInterruptedSubgraphAndThenContinueMainGraphWithSavedState() {
-        GraphMemory memory = new GraphMemoryDefault();
+        GraphMemory memory = new InMemoryGraphMemory();
 
         Node<MainState> subStart = node("subStart", s -> {
             s.subStep += 1;

@@ -17,7 +17,7 @@ class GraphMemoryTest {
 
     @Test
     void shouldResumeFromSavePointUsingSameSessionAndMergeState() {
-        GraphMemoryDefault memory = new GraphMemoryDefault();
+        InMemoryGraphMemory memory = new InMemoryGraphMemory();
 
         Node<TestMemoryState> start = node("start", s -> {
             s.setValue(s.getValue() + 1);
@@ -67,7 +67,7 @@ class GraphMemoryTest {
 
     @Test
     void shouldStoreSavePointInGraphMemoryDefaultWhenNodeCallsToSave() {
-        GraphMemoryDefault memory = new GraphMemoryDefault();
+        InMemoryGraphMemory memory = new InMemoryGraphMemory();
 
         Node<TestMemoryState> start = node("start", s -> s.setValue(1));
         Node<TestMemoryState> saveHere = node("save-here", s -> {
@@ -100,7 +100,7 @@ class GraphMemoryTest {
 
     @Test
     void shouldKeepSessionsIsolatedInMemory() {
-        GraphMemoryDefault memory = new GraphMemoryDefault();
+        InMemoryGraphMemory memory = new InMemoryGraphMemory();
 
         Node<TestMemoryState> start = node("start", s -> s.setValue(s.getValue() + 1));
         Node<TestMemoryState> checkpoint = node("checkpoint", s -> {

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class GraphMemoryDefault implements GraphMemory {
+public final class InMemoryGraphMemory implements GraphMemory {
 
     private final Map<String, Map<String, SavePoint>> store = new ConcurrentHashMap<>();
 
