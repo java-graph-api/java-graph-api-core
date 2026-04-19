@@ -3,7 +3,7 @@ package org.graph.api.core.node.factory;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.ProcessingJoinPoint;
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 import org.graph.api.core.node.NodeInfo;
 import org.graph.api.core.node.action.NodeAction;
 import org.graph.api.core.options.GraphOptions;
@@ -24,7 +24,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    public <I, O> TypedNode<I, O, ? super S> createProxy(TypedNode<I, O, ? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    public <I, O> Node<? super S> createProxy(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         if (target == null) {
             return null;
         }
@@ -42,16 +42,16 @@ public final class NodeProxyFactory<S extends GraphState> {
                 I input = (I) args[0];
                 S state = (S) args[1];
 
-                NodeAction<I, O, S> chain = buildAspectChain(target, sortedAspects);
-                return chain.action(input, state);
+                NodeAction<S> chain = buildAspectChain(target, sortedAspects);
+                chain.action(state);
             }
 
             return defaultMethods(target, method, args);
         };
 
-        return (TypedNode<I, O, S>) Proxy.newProxyInstance(
+        return (Node<S>) Proxy.newProxyInstance(
                 target.getClass().getClassLoader(),
-                new Class<?>[]{TypedNode.class},
+                new Class<?>[]{Node.class},
                 handler
         );
     }
@@ -60,7 +60,7 @@ public final class NodeProxyFactory<S extends GraphState> {
         return "call".equals(method.getName()) && method.getParameterCount() == 2;
     }
 
-    private <I, O> Object defaultMethods(TypedNode<I, O, ? super S> target, Method method, Object[] args) throws Throwable {
+    private <I, O> Object defaultMethods(Node<? super S> target, Method method, Object[] args) throws Throwable {
         switch (method.getName()) {
             case "toString":
                 return target.toString();
@@ -87,24 +87,22 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    private <I, O, T extends GraphState> NodeAction<I, O, S> buildAspectChain(TypedNode<I, O, ? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
-        NodeAction<I, O, S> chain = target::call;
+    private <I, O, T extends GraphState> NodeAction<S> buildAspectChain(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
+        NodeAction<S> chain = target::call;
 
         for (int i = aspects.size() - 1; i >= 0; i--) {
             NodeAspect<T> aspect = (NodeAspect<T>) aspects.get(i);
-            NodeAction<I, O, S> next = chain;
+            NodeAction<S> next = chain;
 
-            chain = (input, state) -> {
+            chain = (state) -> {
                 NodeInfo nodeInfo = new NodeInfo(target.getName(), target.callLimit());
                 //noinspection unchecked
                 T aspectState = (T) state;
-                ProcessingJoinPoint<T> joinPoint = new ProcessingJoinPoint<>(aspectState, options, nodeInfo, () -> next.action(input, state));
-                aspect.before(joinPoint, input);
-                Object result = aspect.around(joinPoint, input);
-                aspect.after(joinPoint, result);
+                ProcessingJoinPoint<T> joinPoint = new ProcessingJoinPoint<>(aspectState, options, nodeInfo, () -> next.action(state));
+                aspect.before(joinPoint);
+                aspect.around(joinPoint);
+                aspect.after(joinPoint);
 
-                //noinspection unchecked
-                return (O) result;
             };
         }
 

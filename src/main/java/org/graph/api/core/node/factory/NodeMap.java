@@ -1,16 +1,16 @@
 package org.graph.api.core.node.factory;
 
 import org.graph.api.core.GraphState;
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class NodeMap<S extends GraphState> {
 
-    private final Map<String, TypedNode<?, ?, ? super S>> nodeMap = new HashMap<>();
+    private final Map<String, Node<? super S>> nodeMap = new HashMap<>();
 
-    public void put(String key, TypedNode<?, ?, ? super S> value) {
+    public void put(String key, Node<? super S> value) {
         if (this.containsKey(key)) {
             var thisValue = this.get(key);
             if (!thisValue.getId().equals(value.getId())) {
@@ -21,7 +21,7 @@ public class NodeMap<S extends GraphState> {
         }
     }
 
-    public TypedNode<?, ?, ? super S> get(String key) {
+    public Node<? super S> get(String key) {
         return nodeMap.get(key);
     }
 

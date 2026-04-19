@@ -2,13 +2,17 @@ package org.graph.api.core.node;
 
 import org.graph.api.core.GraphState;
 
-public interface Node<S extends GraphState> extends TypedNode<Void, Void, S> {
+import java.util.UUID;
+
+public interface Node<S extends GraphState> {
+
+    String getName();
 
     void call(S state);
 
-    @Override
-    default Void call(Void input, S state) {
-        call(state);
-        return null;
+    UUID getId();
+
+    default int callLimit() {
+        return 0;
     }
 }

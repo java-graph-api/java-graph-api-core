@@ -3,7 +3,7 @@ package org.graph.api.core.node.action;
 import org.graph.api.core.GraphState;
 
 @FunctionalInterface
-public interface NodeAction<I, O, S extends GraphState> {
+public interface NodeAction<S extends GraphState> {
 
-    O action(I input, S state);
+    void action(S state);
 }

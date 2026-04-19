@@ -3,25 +3,25 @@ package org.graph.api.core.route;
 import lombok.Getter;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.exception.GraphRoutingException;
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 import org.graph.api.core.route.conditional.RouteConditional;
 
 public class Route<S extends GraphState> {
 
-    private final TypedNode<?, ?, ? super S> source;
+    private final Node<? super S> source;
     @Getter
-    private final TypedNode<?, ?, ? super S> target;
+    private final Node<? super S> target;
     private final RouteConditional<?, ? super S> conditional;
     private final Type type;
 
-    Route(TypedNode<?, ?, ? super S> source, TypedNode<?, ?, ? super S> target, RouteConditional<?, ? super S> conditional, Type type) {
+    Route(Node<? super S> source, Node<? super S> target, RouteConditional<?, ? super S> conditional, Type type) {
         this.source = source;
         this.target = target;
         this.conditional = conditional;
         this.type = type;
     }
 
-    public TypedNode<?, ?, ? super S> getSource() {
+    public Node<? super S> getSource() {
         if (source == null) {
             throw GraphRoutingException.routeNotFound(target.getName());
         }

@@ -7,12 +7,11 @@ import org.graph.api.core.GraphState;
 public class LoggingAspect implements NodeAspect<GraphState> {
 
     @Override
-    public Object around(ProcessingJoinPoint<GraphState> processingJoinPoint, Object input) {
+    public void around(ProcessingJoinPoint<GraphState> processingJoinPoint) {
         log.info("Graph: {}, Node: {} -> begin", processingJoinPoint.getOptions().getGraphName(), processingJoinPoint.getCurrentNodeName());
         try {
-            var result = processingJoinPoint.action();
+            processingJoinPoint.action();
             log.info("Graph: {}, Node: {} -> completed", processingJoinPoint.getOptions().getGraphName(), processingJoinPoint.getCurrentNodeName());
-            return result;
         } catch (Throwable e) {
             log.error("Graph: {}, Node: {} -> error: {}", processingJoinPoint.getOptions().getGraphName(), processingJoinPoint.getCurrentNodeName(), e.getMessage());
             throw e;

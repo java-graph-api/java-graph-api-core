@@ -1,8 +1,8 @@
 package org.graph.api.core.route;
 
-import org.graph.api.core.route.conditional.RouteConditional;
+import org.graph.api.core.route.conditional.RouteStateConditional;
 
-public record RouteSchema(String source, String target, RouteConditional<?, ?> conditional, Route.Type type) {
+public record RouteSchema(String source, String target, RouteStateConditional<?> conditional, Route.Type type) {
 
     public RouteSchema {
         validate(source, target, type);

@@ -15,12 +15,12 @@ public class SavePointAspect implements NodeAspect<GraphState> {
     }
 
     @Override
-    public void before(JoinPoint<GraphState> joinPoint, Object input) {
+    public void before(JoinPoint<GraphState> joinPoint) {
         ((SavePointState) joinPoint.getState()).saveClear();
     }
 
     @Override
-    public void after(JoinPoint<GraphState> joinPoint, Object result) {
+    public void after(JoinPoint<GraphState> joinPoint) {
         var state = (SavePointState) joinPoint.getState();
         if (state.isSave() || joinPoint.getOptions().isSaveAll()) {
             ensureGraphMemory();

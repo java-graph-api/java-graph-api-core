@@ -5,14 +5,13 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.NodeRouting;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 import org.graph.api.core.node.factory.NodeFactory;
 import org.graph.api.core.node.factory.NodeMap;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
 import org.graph.api.core.route.RouteFactory;
 import org.graph.api.core.route.RouteSchema;
-import org.graph.api.core.route.conditional.RouteConditional;
 import org.graph.api.core.route.conditional.RouteStateConditional;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     private final List<NodeAspect<? extends GraphState>> aspects;
     private final NodeFactory<S> nodeFactory;
 
-    public RouteSpecificationDefault(GraphOptions options, GraphMemory memory, TypedNode<Void, ?, ? super S> beginNode, List<NodeAspect<? extends GraphState>> aspects) {
+    public RouteSpecificationDefault(GraphOptions options, GraphMemory memory, Node<? super S> beginNode, List<NodeAspect<? extends GraphState>> aspects) {
         this.aspects = aspects;
         this.memory = memory;
         this.options = options;
@@ -39,49 +38,44 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     }
 
     @Override
-    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target) {
-        return route(source, target, (output, state) -> true, Route.Type.DEFAULT);
+    public RouteSpecification<S> route(Node<? super S> source, Node<? super S> target) {
+        return route(source, target, state -> true, Route.Type.DEFAULT);
     }
 
     @Override
-    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target, RouteConditional<R, ? super S> conditional) {
-        return route(source, target, conditional, Route.Type.CONDITIONAL);
+    public RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteStateConditional<? super S> stateConditional) {
+        return route(source, target, stateConditional, Route.Type.CONDITIONAL);
     }
 
     @Override
-    public <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target, RouteStateConditional<? super S> stateConditional) {
-        return route(source, target, RouteConditional.ofState(stateConditional), Route.Type.CONDITIONAL);
-    }
-
-    @Override
-    public GraphExecutor<S> end(TypedNode<?, Void, ? super S> target) {
+    public GraphExecutor<S> end(Node<? super S> target) {
         addEndNode(target);
         return new GraphExecutor<>(getRoutes(), memory, options);
     }
 
     @Override
-    public GraphExecutor<S> end(Collection<TypedNode<?, Void, ? super S>> targets) {
+    public GraphExecutor<S> end(Collection<Node<? super S>> targets) {
         targets.forEach(this::addEndNode);
         return new GraphExecutor<>(getRoutes(), memory, options);
     }
 
-    private <I, R, RR> RouteSpecification<S> route(TypedNode<I, R, ? super S> source, TypedNode<R, RR, ? super S> target, RouteConditional<R, ? super S> conditional, Route.Type type) {
+    private RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteStateConditional<? super S> conditional, Route.Type type) {
         var schema = routeFactory.create(source.getName(), target.getName(), conditional, type);
         add(target, schema);
         return this;
     }
 
-    private void addEndNode(TypedNode<?, Void, ? super S> endNode) {
+    private void addEndNode(Node<? super S> endNode) {
         var schema = routeFactory.end(endNode.getName());
         add(endNode, schema);
     }
 
-    private void addBeginNode(TypedNode<?, ?, ? super S> beginNode) {
+    private void addBeginNode(Node<? super S> beginNode) {
         var schema = routeFactory.begin(beginNode.getName());
         add(beginNode, schema);
     }
 
-    private void add(TypedNode<?, ?, ? super S> node, RouteSchema schema) {
+    private void add(Node<? super S> node, RouteSchema schema) {
         addSchema(schema);
         addNodeToMap(node);
     }
@@ -90,11 +84,11 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
         this.schemas.add(schema);
     }
 
-    private void addNodeToMap(TypedNode<?, ?, ? super S> node) {
+    private void addNodeToMap(Node<? super S> node) {
         this.nodeMap.put(node.getName(), createNodeProxy(node));
     }
 
-    private TypedNode<?, ?, ? super S> createNodeProxy(TypedNode<?, ?, ? super S> target) {
+    private Node<? super S> createNodeProxy(Node<? super S> target) {
         return nodeFactory.createProxy(target, aspects);
     }
 

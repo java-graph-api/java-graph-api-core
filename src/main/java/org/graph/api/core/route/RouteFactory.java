@@ -3,6 +3,7 @@ package org.graph.api.core.route;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.node.factory.NodeMap;
 import org.graph.api.core.route.conditional.RouteConditional;
+import org.graph.api.core.route.conditional.RouteStateConditional;
 
 import java.util.List;
 import java.util.Map;
@@ -28,14 +29,14 @@ public class RouteFactory<S extends GraphState> {
     }
 
     public RouteSchema begin(String nodeName) {
-        return new RouteSchema(null, nodeName, (output, state) -> true, Route.Type.BEGIN);
+        return new RouteSchema(null, nodeName, state -> true, Route.Type.BEGIN);
     }
 
-    public RouteSchema create(String source, String target, RouteConditional<?, ?> conditional, Route.Type type) {
+    public RouteSchema create(String source, String target, RouteStateConditional<?> conditional, Route.Type type) {
         return new RouteSchema(source, target, conditional, type);
     }
 
     public RouteSchema end(String nodeName) {
-        return new RouteSchema(nodeName, null, (output, state) -> true, Route.Type.END);
+        return new RouteSchema(nodeName, null, state -> true, Route.Type.END);
     }
 }
