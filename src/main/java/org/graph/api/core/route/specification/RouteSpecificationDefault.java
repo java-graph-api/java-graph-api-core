@@ -5,7 +5,6 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.NodeRouting;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.node.ConsumerNode;
 import org.graph.api.core.node.TypedNode;
 import org.graph.api.core.node.factory.NodeFactory;
 import org.graph.api.core.node.factory.NodeMap;
@@ -61,7 +60,7 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     }
 
     @Override
-    public GraphExecutor<S> end(Collection<ConsumerNode<?, ? super S>> targets) {
+    public GraphExecutor<S> end(Collection<TypedNode<?, Void, ? super S>> targets) {
         targets.forEach(this::addEndNode);
         return new GraphExecutor<>(getRoutes(), memory, options);
     }
