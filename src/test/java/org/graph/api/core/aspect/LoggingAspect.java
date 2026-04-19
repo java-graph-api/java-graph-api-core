@@ -19,7 +19,7 @@ public class LoggingAspect implements NodeAspect<GraphState> {
     }
 
     @Override
-    public int getOrder() {
+    public int order() {
         return Integer.MIN_VALUE;
     }
 }

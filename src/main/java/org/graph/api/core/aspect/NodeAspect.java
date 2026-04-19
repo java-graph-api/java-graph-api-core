@@ -14,7 +14,7 @@ public interface NodeAspect<S extends GraphState> {
         processingJoinPoint.action();
     }
 
-    default int getOrder() {
+    default int order() {
         return 0;
     }
 }

@@ -34,7 +34,7 @@ public final class NodeProxyFactory<S extends GraphState> {
         }
 
         List<NodeAspect<? extends GraphState>> sortedAspects = aspects.stream()
-                .sorted(Comparator.comparingInt(NodeAspect::getOrder))
+                .sorted(Comparator.comparingInt(NodeAspect::order))
                 .toList();
 
         InvocationHandler handler = (proxy, method, args) -> {

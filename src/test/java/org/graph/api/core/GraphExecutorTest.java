@@ -180,6 +180,7 @@ class GraphExecutorTest {
         return new TestNode<>(name, action, 0);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static <S extends GraphState> Node<S> node(String name, Consumer<S> action, int callLimit) {
         return new TestNode<>(name, action, callLimit);
     }

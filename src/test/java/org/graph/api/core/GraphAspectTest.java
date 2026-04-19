@@ -103,7 +103,7 @@ class GraphAspectTest {
         SpyLoggingAspect loggingAspect = new SpyLoggingAspect();
         NodeAspect<AspectState> customAspect = new NodeAspect<>() {
             @Override
-            public int getOrder() {
+            public int order() {
                 return 100;
             }
 
@@ -170,27 +170,15 @@ class GraphAspectTest {
         return new TestNode<>(name, action);
     }
 
-    private static final class OrderedAspect implements NodeAspect<AspectState> {
-        private final String name;
-        private final int order;
-
-        private OrderedAspect(String name, int order) {
-            this.name = name;
-            this.order = order;
-        }
+    private record OrderedAspect(String name, int order) implements NodeAspect<AspectState> {
 
         @Override
-        public int getOrder() {
-            return order;
+            public void around(ProcessingJoinPoint<AspectState> joinPoint) {
+                joinPoint.getState().events.add(name + ":before:" + joinPoint.getCurrentNodeName());
+                joinPoint.action();
+                joinPoint.getState().events.add(name + ":after:" + joinPoint.getCurrentNodeName());
+            }
         }
-
-        @Override
-        public void around(ProcessingJoinPoint<AspectState> joinPoint) {
-            joinPoint.getState().events.add(name + ":before:" + joinPoint.getCurrentNodeName());
-            joinPoint.action();
-            joinPoint.getState().events.add(name + ":after:" + joinPoint.getCurrentNodeName());
-        }
-    }
 
 
     private static final class SpyLoggingAspect extends LoggingAspect {
