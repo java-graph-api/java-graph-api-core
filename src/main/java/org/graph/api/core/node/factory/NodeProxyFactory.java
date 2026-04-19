@@ -24,7 +24,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    public <I, O> Node<? super S> createProxy(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    public Node<? super S> createProxy(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         if (target == null) {
             return null;
         }
@@ -39,11 +39,10 @@ public final class NodeProxyFactory<S extends GraphState> {
 
         InvocationHandler handler = (proxy, method, args) -> {
             if (isActionMethod(method)) {
-                I input = (I) args[0];
-                S state = (S) args[1];
-
+                S state = (S) args[0];
                 Consumer<S> chain = buildAspectChain(target, sortedAspects);
                 chain.accept(state);
+                return null;
             }
 
             return defaultMethods(target, method, args);
@@ -57,10 +56,10 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     private boolean isActionMethod(Method method) {
-        return "call".equals(method.getName()) && method.getParameterCount() == 2;
+        return "call".equals(method.getName()) && method.getParameterCount() == 1;
     }
 
-    private <I, O> Object defaultMethods(Node<? super S> target, Method method, Object[] args) throws Throwable {
+    private Object defaultMethods(Node<? super S> target, Method method, Object[] args) throws Throwable {
         switch (method.getName()) {
             case "toString":
                 return target.toString();
@@ -87,7 +86,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    private <I, O, T extends GraphState> Consumer<S> buildAspectChain(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    private <T extends GraphState> Consumer<S> buildAspectChain(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         Consumer<S> chain = target::call;
 
         for (int i = aspects.size() - 1; i >= 0; i--) {
