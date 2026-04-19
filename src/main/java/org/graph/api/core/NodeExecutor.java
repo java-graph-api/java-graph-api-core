@@ -1,14 +1,14 @@
 package org.graph.api.core;
 
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 
-public class NodeExecutor {
+public class NodeExecutor<S extends GraphState> {
 
-    public <I, R, S extends GraphState> R execute(TypedNode<I, R, S> node, I input, S state) {
-        return complete(node, input, state);
+    public void execute(Node<S> node, S state) {
+        complete(node, state);
     }
 
-    public <I, R, S extends GraphState> R complete(TypedNode<I, R, S> node, I input, S state) {
-        return node.call(input, state);
+    public void complete(Node<S> node, S state) {
+        node.call(state);
     }
 }

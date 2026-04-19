@@ -8,7 +8,7 @@ import org.graph.api.core.exception.TooManyNodeCallException;
 public class NodeCallChecker implements NodeAspect<GraphState> {
 
     @Override
-    public void before(JoinPoint<GraphState> joinPoint, Object input) {
+    public void before(JoinPoint<GraphState> joinPoint) {
         NodeCallState callCounter = joinPoint.getState();
         var calls = callCounter.increment(joinPoint.getCurrentNodeName());
         if (joinPoint.getNodeInfo().callLimit() > 0) {

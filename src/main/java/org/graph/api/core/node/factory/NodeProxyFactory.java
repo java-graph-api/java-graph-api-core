@@ -3,9 +3,8 @@ package org.graph.api.core.node.factory;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.ProcessingJoinPoint;
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 import org.graph.api.core.node.NodeInfo;
-import org.graph.api.core.node.action.NodeAction;
 import org.graph.api.core.options.GraphOptions;
 
 import java.lang.reflect.InvocationHandler;
@@ -14,6 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class NodeProxyFactory<S extends GraphState> {
 
@@ -24,7 +24,7 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    public <I, O> TypedNode<I, O, S> createProxy(TypedNode<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    public Node<? super S> createProxy(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         if (target == null) {
             return null;
         }
@@ -34,33 +34,32 @@ public final class NodeProxyFactory<S extends GraphState> {
         }
 
         List<NodeAspect<? extends GraphState>> sortedAspects = aspects.stream()
-                .sorted(Comparator.comparingInt(NodeAspect::getOrder))
+                .sorted(Comparator.comparingInt(NodeAspect::order))
                 .toList();
 
         InvocationHandler handler = (proxy, method, args) -> {
             if (isActionMethod(method)) {
-                I input = (I) args[0];
-                S state = (S) args[1];
-
-                NodeAction<I, O, S> chain = buildAspectChain(target, sortedAspects);
-                return chain.action(input, state);
+                S state = (S) args[0];
+                Consumer<S> chain = buildAspectChain(target, sortedAspects);
+                chain.accept(state);
+                return null;
             }
 
             return defaultMethods(target, method, args);
         };
 
-        return (TypedNode<I, O, S>) Proxy.newProxyInstance(
+        return (Node<S>) Proxy.newProxyInstance(
                 target.getClass().getClassLoader(),
-                new Class<?>[]{TypedNode.class},
+                new Class<?>[]{Node.class},
                 handler
         );
     }
 
     private boolean isActionMethod(Method method) {
-        return "call".equals(method.getName()) && method.getParameterCount() == 2;
+        return "call".equals(method.getName()) && method.getParameterCount() == 1;
     }
 
-    private <I, O> Object defaultMethods(TypedNode<I, O, S> target, Method method, Object[] args) throws Throwable {
+    private Object defaultMethods(Node<? super S> target, Method method, Object[] args) throws Throwable {
         switch (method.getName()) {
             case "toString":
                 return target.toString();
@@ -87,24 +86,22 @@ public final class NodeProxyFactory<S extends GraphState> {
     }
 
     @SuppressWarnings("unchecked")
-    private <I, O, T extends GraphState> NodeAction<I, O, S> buildAspectChain(TypedNode<I, O, S> target, List<NodeAspect<? extends GraphState>> aspects) {
-        NodeAction<I, O, S> chain = target::call;
+    private <T extends GraphState> Consumer<S> buildAspectChain(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
+        Consumer<S> chain = target::call;
 
         for (int i = aspects.size() - 1; i >= 0; i--) {
             NodeAspect<T> aspect = (NodeAspect<T>) aspects.get(i);
-            NodeAction<I, O, S> next = chain;
+            Consumer<S> next = chain;
 
-            chain = (input, state) -> {
+            chain = (state) -> {
                 NodeInfo nodeInfo = new NodeInfo(target.getName(), target.callLimit());
                 //noinspection unchecked
                 T aspectState = (T) state;
-                ProcessingJoinPoint<T> joinPoint = new ProcessingJoinPoint<>(aspectState, options, nodeInfo, () -> next.action(input, state));
-                aspect.before(joinPoint, input);
-                Object result = aspect.around(joinPoint, input);
-                aspect.after(joinPoint, result);
+                ProcessingJoinPoint<T> joinPoint = new ProcessingJoinPoint<>(aspectState, options, nodeInfo, () -> next.accept(state));
+                aspect.before(joinPoint);
+                aspect.around(joinPoint);
+                aspect.after(joinPoint);
 
-                //noinspection unchecked
-                return (O) result;
             };
         }
 

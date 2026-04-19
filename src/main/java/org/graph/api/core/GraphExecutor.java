@@ -2,11 +2,11 @@ package org.graph.api.core;
 
 import lombok.Builder;
 import org.graph.api.core.memory.GraphMemory;
+import org.graph.api.core.memory.GraphStateMerger;
 import org.graph.api.core.memory.SavePoint;
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
-import org.graph.api.core.memory.GraphStateMerger;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -17,7 +17,7 @@ public final class GraphExecutor<S extends GraphState> {
     private final GraphMemory memory;
     private final GraphOptions options;
     private final NodeRouting<S> nodeRouting;
-    private final NodeExecutor nodeExecutor = new NodeExecutor();
+    private final NodeExecutor<S> nodeExecutor = new NodeExecutor<>();
 
     public GraphExecutor(NodeRouting<S> nodeRouting, GraphMemory memory, GraphOptions options) {
         this.memory = memory;
@@ -36,41 +36,41 @@ public final class GraphExecutor<S extends GraphState> {
     }
 
     private S internalExecute(S state) {
-        StartPoint<Object, Object, S> startPoint = loadStartNodeAndState(state);
+        StartPoint<S> startPoint = loadStartNodeAndState(state);
 
-        TypedNode<Object, Object, S> beginNode = startPoint.node();
+        Node<S> beginNode = startPoint.node();
         state = startPoint.state();
 
-        Object currentResult = nodeExecutor.complete(beginNode, null, state);
+        nodeExecutor.complete(beginNode, state);
 
         if (state.isGraphInterrupted()) {
             return state;
         }
 
-        Route<S> route = nextRoute(beginNode, currentResult, state);
+        Route<S> route = nextRoute(beginNode, state);
 
         while (!route.isEnd()) {
-            TypedNode<Object, Object, S> currentNode = (TypedNode<Object, Object, S>) route.getTarget();
-            currentResult = nodeExecutor.execute(currentNode, currentResult, state);
+            Node<S> currentNode = (Node<S>) route.getTarget();
+            nodeExecutor.execute(currentNode, state);
 
             if (state.isGraphInterrupted()) {
                 return state;
             }
 
-            route = nextRoute(currentNode, currentResult, state);
+            route = nextRoute(currentNode, state);
         }
 
         return complete(state);
     }
 
-    private <O> StartPoint<Object, Object, S> loadStartNodeAndState(S state) {
-        return (StartPoint<Object, Object, S>) getSavePoint(state)
-                .map(sp -> StartPoint.<Object, O, S>builder()
-                        .node((TypedNode<Object, O, S>) nodeRouting.getNode(sp.nodeName()))
+    private StartPoint<S> loadStartNodeAndState(S state) {
+        return getSavePoint(state)
+                .map(sp -> StartPoint.<S>builder()
+                        .node((Node<S>) nodeRouting.getNode(sp.nodeName()))
                         .state((S) GraphStateMerger.merge(sp.state(), state))
                         .build()
-                ).orElseGet(() -> StartPoint.<Object, O, S>builder()
-                        .node((TypedNode<Object, O, S>) nodeRouting.getBeginNode())
+                ).orElseGet(() -> StartPoint.<S>builder()
+                        .node((Node<S>) nodeRouting.getBeginNode())
                         .state(state)
                         .build());
     }
@@ -82,8 +82,8 @@ public final class GraphExecutor<S extends GraphState> {
         return memory.get(options.getGraphName(), state.getSessionId());
     }
 
-    private Route<S> nextRoute(TypedNode<Object, Object, S> node, Object currentResult, S state) {
-        return nodeRouting.getRoute(node, currentResult, state);
+    private Route<S> nextRoute(Node<S> node, S state) {
+        return nodeRouting.getRoute(node, state);
     }
 
     private S complete(S state) {
@@ -92,6 +92,6 @@ public final class GraphExecutor<S extends GraphState> {
     }
 
     @Builder
-    private record StartPoint<I, O, S extends GraphState>(TypedNode<I, O, S> node, S state) {
+    private record StartPoint<S extends GraphState>(Node<S> node, S state) {
     }
 }

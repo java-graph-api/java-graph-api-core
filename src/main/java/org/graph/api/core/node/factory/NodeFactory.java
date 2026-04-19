@@ -4,7 +4,7 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.internal.InternalAspectProvider;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.node.TypedNode;
+import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class NodeFactory<S extends GraphState> {
         this.internalAspectProvider = new InternalAspectProvider(memory);
     }
 
-    public TypedNode<?, ?, S> createProxy(TypedNode<?, ?, S> target, List<NodeAspect<? extends GraphState>> aspects) {
+    public Node<? super S> createProxy(Node<? super S> target, List<NodeAspect<? extends GraphState>> aspects) {
         var proxy = nodeProxyFactory.createProxy(target, internalAspectProvider.get());
         return nodeProxyFactory.createProxy(proxy, aspects);
     }
