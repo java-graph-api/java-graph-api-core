@@ -274,15 +274,4 @@ class GraphExecutorTest {
         private int hits;
     }
 
-    private static final class ResumableState extends GraphState implements Serializable {
-        private int step;
-
-        public int getStep() {
-            return step;
-        }
-
-        public void setStep(int step) {
-            this.step = step;
-        }
-    }
 }
