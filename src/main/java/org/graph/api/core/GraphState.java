@@ -4,7 +4,7 @@ import org.graph.api.core.node.guard.NodeCallState;
 
 import java.util.UUID;
 
-public class GraphState extends NodeCallState {
+public abstract class GraphState extends NodeCallState {
 
     private transient ExecutorStatus executorStatus;
     private String sessionId;
