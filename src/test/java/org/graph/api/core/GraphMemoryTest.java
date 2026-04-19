@@ -92,9 +92,8 @@ class GraphMemoryTest {
         assertEquals("memory-save-check", savePoint.graphName());
         assertEquals("save-here", savePoint.nodeName());
         assertEquals("session-save", savePoint.sessionId());
-        assertEquals(TestMemoryState.class, savePoint.stateClass());
-
         TestMemoryState savedState = (TestMemoryState) savePoint.state();
+        assertEquals(TestMemoryState.class, savedState.getClass());
         assertEquals(42, savedState.getValue());
     }
 
