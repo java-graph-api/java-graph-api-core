@@ -63,6 +63,41 @@ class GraphMemoryTest {
         assertTrue(resumed.isPauseDone());
     }
 
+
+    @Test
+    void shouldStoreSavePointInGraphMemoryDefaultWhenNodeCallsToSave() {
+        GraphMemoryDefault memory = new GraphMemoryDefault();
+
+        Node<TestMemoryState> start = node("start", s -> s.setValue(1));
+        Node<TestMemoryState> saveHere = node("save-here", s -> {
+            s.setValue(s.getValue() + 41);
+            s.toSave();
+            s.toInterruptGraph();
+        });
+        Node<TestMemoryState> finish = node("finish", s -> s.setValue(999));
+
+        GraphExecutor<TestMemoryState> executor = new GraphSpecification<TestMemoryState>()
+                .options(options("memory-save-check"))
+                .memory(memory)
+                .begin(start)
+                .route(start, saveHere)
+                .route(saveHere, finish)
+                .end(finish);
+
+        TestMemoryState result = executor.execute(new TestMemoryState(), "session-save");
+
+        assertEquals(ExecutorStatus.INTERRUPT, result.getExecutorStatus());
+        var savePoint = memory.get("memory-save-check", "session-save").orElseThrow();
+
+        assertEquals("memory-save-check", savePoint.graphName());
+        assertEquals("save-here", savePoint.nodeName());
+        assertEquals("session-save", savePoint.sessionId());
+        assertEquals(TestMemoryState.class, savePoint.stateClass());
+
+        TestMemoryState savedState = (TestMemoryState) savePoint.state();
+        assertEquals(42, savedState.getValue());
+    }
+
     @Test
     void shouldKeepSessionsIsolatedInMemory() {
         GraphMemoryDefault memory = new GraphMemoryDefault();

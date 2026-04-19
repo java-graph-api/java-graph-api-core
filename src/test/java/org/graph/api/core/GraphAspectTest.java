@@ -1,5 +1,6 @@
 package org.graph.api.core;
 
+import org.graph.api.core.aspect.LoggingAspect;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.ProcessingJoinPoint;
 import org.graph.api.core.node.Node;
@@ -90,6 +91,48 @@ class GraphAspectTest {
         );
     }
 
+
+    @Test
+    void shouldExecuteWithLoggingAspectAndPreserveAspectOrder() {
+        AspectState state = new AspectState();
+
+        Node<AspectState> start = node("start", s -> s.events.add("node:start"));
+        Node<AspectState> finish = node("finish", s -> s.events.add("node:finish"));
+
+        SpyLoggingAspect loggingAspect = new SpyLoggingAspect();
+        NodeAspect<AspectState> customAspect = new NodeAspect<>() {
+            @Override
+            public int getOrder() {
+                return 100;
+            }
+
+            @Override
+            public void around(ProcessingJoinPoint<AspectState> joinPoint) {
+                joinPoint.getState().events.add("custom:before:" + joinPoint.getCurrentNodeName());
+                joinPoint.action();
+                joinPoint.getState().events.add("custom:after:" + joinPoint.getCurrentNodeName());
+            }
+        };
+
+        GraphExecutor<AspectState> executor = new GraphSpecification<AspectState>()
+                .options(options("aspect-logging"))
+                .aspect(customAspect)
+                .aspect(loggingAspect)
+                .begin(start)
+                .route(start, finish)
+                .end(finish);
+
+        AspectState result = executor.execute(state, "aspect-logging-session");
+
+        assertEquals(
+                List.of(
+                        "log:before:start", "custom:before:start", "node:start", "custom:after:start", "log:after:start",
+                        "log:before:finish", "custom:before:finish", "node:finish", "custom:after:finish", "log:after:finish"
+                ),
+                result.events
+        );
+    }
+
     private static GraphOptions options(String name) {
         return GraphOptions.builder().graphName(name).nodeCallLimit(100).build();
     }
@@ -117,6 +160,17 @@ class GraphAspectTest {
             joinPoint.getState().events.add(name + ":before:" + joinPoint.getCurrentNodeName());
             joinPoint.action();
             joinPoint.getState().events.add(name + ":after:" + joinPoint.getCurrentNodeName());
+        }
+    }
+
+
+    private static final class SpyLoggingAspect extends LoggingAspect {
+        @Override
+        public void around(ProcessingJoinPoint<GraphState> processingJoinPoint) {
+            AspectState state = (AspectState) processingJoinPoint.getState();
+            state.events.add("log:before:" + processingJoinPoint.getCurrentNodeName());
+            super.around(processingJoinPoint);
+            state.events.add("log:after:" + processingJoinPoint.getCurrentNodeName());
         }
     }
 
