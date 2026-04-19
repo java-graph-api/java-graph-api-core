@@ -2,7 +2,7 @@ package org.graph.api.core;
 
 import lombok.Builder;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.memory.GraphStateMerger;
+import org.graph.api.core.memory.merge.GraphStateMerger;
 import org.graph.api.core.memory.SavePoint;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
