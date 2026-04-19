@@ -2,44 +2,54 @@ package org.graph.api.core;
 
 import org.graph.api.core.node.guard.NodeCallState;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public abstract class GraphState extends NodeCallState {
 
-    private transient ExecutorStatus executorStatus;
-    private String sessionId;
-    private final UUID executionId = UUID.randomUUID();
+    private transient ExecutionContext executionContext;
+
+    public final ExecutionContext getExecutionContext() {
+        return ensureExecutionContext();
+    }
 
     public final UUID getExecutionId() {
-        return executionId;
+        return ensureExecutionContext().getExecutionId();
     }
 
     public final String getSessionId() {
-        return sessionId;
+        return ensureExecutionContext().getSessionId();
     }
 
     public final ExecutorStatus getExecutorStatus() {
-        return executorStatus;
+        return ensureExecutionContext().getExecutorStatus();
     }
 
     public final void toInterruptGraph() {
-        setExecutorStatus(ExecutorStatus.INTERRUPT);
+        interruptGraph();
+    }
+
+    public final void interruptGraph() {
+        ensureExecutionContext().interrupt();
     }
 
     final void completed() {
-        setExecutorStatus(ExecutorStatus.COMPLETED);
+        ensureExecutionContext().complete();
     }
 
-    final void init(String sessionId) {
-        this.executorStatus = null;
-        this.sessionId = sessionId;
+    final void initExecutionContext(String sessionId) {
+        this.executionContext = ExecutionContext.init(sessionId);
     }
 
     final boolean isGraphInterrupted() {
-        return this.executorStatus == ExecutorStatus.INTERRUPT;
+        return ensureExecutionContext().isInterrupted();
     }
 
-    private void setExecutorStatus(ExecutorStatus executorStatus) {
-        this.executorStatus = executorStatus;
+    private ExecutionContext ensureExecutionContext() {
+        this.executionContext = Objects.requireNonNull(
+                this.executionContext,
+                "ExecutionContext is not initialized. Use GraphExecutor.execute(state, sessionId)"
+        );
+        return executionContext;
     }
 }

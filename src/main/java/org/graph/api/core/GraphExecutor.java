@@ -31,7 +31,7 @@ public final class GraphExecutor<S extends GraphState> {
 
     public S execute(S state, String sessionId) {
         Objects.requireNonNull(sessionId, "sessionId cannot be null");
-        state.init(sessionId);
+        state.initExecutionContext(sessionId);
         return internalExecute(state);
     }
 
@@ -79,7 +79,7 @@ public final class GraphExecutor<S extends GraphState> {
         if (memory == null) {
             return Optional.empty();
         }
-        return memory.get(options.getGraphName(), state.getSessionId());
+        return memory.get(options.getGraphName(), state.getExecutionContext().getSessionId());
     }
 
     private Route<S> nextRoute(Node<S> node, S state) {

@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -208,6 +209,30 @@ class GraphExecutorTest {
         assertEquals("resume-session", resumedState.getSessionId());
         assertEquals(3, resumedState.getStep());
         assertNotEquals(firstExecutionId, resumedState.getExecutionId());
+    }
+
+
+    @Test
+    void shouldInitializeExecutionContextAndKeepLegacyDelegatesCompatible() {
+        Node<ResumableState> start = node("start", s -> s.setStep(1));
+
+        GraphExecutor<ResumableState> executor = new GraphSpecification<ResumableState>()
+                .options(options("execution-context-init"))
+                .begin(start)
+                .end(start);
+
+        ResumableState first = executor.execute(new ResumableState(), "ctx-session");
+
+        ExecutionContext firstContext = first.getExecutionContext();
+        assertEquals("ctx-session", firstContext.getSessionId());
+        assertEquals(ExecutorStatus.COMPLETED, firstContext.getExecutorStatus());
+        assertSame(firstContext.getExecutionId(), first.getExecutionId());
+        assertEquals(firstContext.getSessionId(), first.getSessionId());
+        assertEquals(firstContext.getExecutorStatus(), first.getExecutorStatus());
+
+        ResumableState second = executor.execute(new ResumableState(), "ctx-session");
+
+        assertNotEquals(first.getExecutionId(), second.getExecutionId());
     }
 
     private static GraphOptions options(String name) {
