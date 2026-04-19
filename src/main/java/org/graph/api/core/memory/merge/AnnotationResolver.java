@@ -4,8 +4,7 @@ import org.graph.api.core.memory.ClassMetadata;
 import org.graph.api.core.memory.PropertyMetadata;
 import org.graph.api.core.memory.annotation.SavePointExclude;
 import org.graph.api.core.memory.annotation.SavePointIgnore;
-import org.graph.api.core.memory.annotation.SavePointReadInclude;
-import org.graph.api.core.memory.annotation.SavePointWriteInclude;
+import org.graph.api.core.memory.annotation.SavePointInclude;
 
 import java.beans.Introspector;
 import java.lang.annotation.Annotation;
@@ -85,24 +84,21 @@ final class AnnotationResolver {
         boolean getterExcluded = resolveGetterExcluded(getterExclude, getterIgnore, fieldExclude, fieldIgnore);
         boolean setterExcluded = resolveSetterExcluded(setterExclude, setterIgnore, fieldExclude, fieldIgnore);
 
-        SavePointWriteInclude getterWriteInclude = annotationFromGetter(meta.getter, SavePointWriteInclude.class);
-        SavePointWriteInclude setterWriteInclude = annotationFromSetter(meta.setter, SavePointWriteInclude.class);
-        SavePointWriteInclude fieldWriteInclude = annotationFromField(meta.field, SavePointWriteInclude.class);
+        SavePointInclude getterInclude = annotationFromGetter(meta.getter, SavePointInclude.class);
+        SavePointInclude setterInclude = annotationFromSetter(meta.setter, SavePointInclude.class);
+        SavePointInclude fieldInclude = annotationFromField(meta.field, SavePointInclude.class);
 
-        SavePointReadInclude getterReadInclude = annotationFromGetter(meta.getter, SavePointReadInclude.class);
-        SavePointReadInclude setterReadInclude = annotationFromSetter(meta.setter, SavePointReadInclude.class);
-        SavePointReadInclude fieldReadInclude = annotationFromField(meta.field, SavePointReadInclude.class);
+        boolean writeGetterIncluded = resolveWriteGetterIncluded(getterInclude, fieldInclude);
+        boolean writeSetterIncluded = resolveWriteSetterIncluded(setterInclude, fieldInclude);
+        boolean readGetterIncluded = resolveReadGetterIncluded(getterInclude, fieldInclude);
+        boolean readSetterIncluded = resolveReadSetterIncluded(setterInclude, fieldInclude);
 
-        boolean writeGetterIncluded = resolveWriteGetterIncluded(getterWriteInclude, fieldWriteInclude);
-        boolean writeSetterIncluded = resolveWriteSetterIncluded(setterWriteInclude, fieldWriteInclude);
-        boolean readGetterIncluded = resolveReadGetterIncluded(getterReadInclude, fieldReadInclude);
-        boolean readSetterIncluded = resolveReadSetterIncluded(setterReadInclude, fieldReadInclude);
+        String writeKey = resolveWriteKey(meta.propertyName, getterInclude, fieldInclude);
+        String readKey = resolveReadKey(meta.propertyName, setterInclude, fieldInclude);
 
-        String writeKey = resolveWriteKey(meta.propertyName, getterWriteInclude, fieldWriteInclude);
-        String readKey = resolveReadKey(meta.propertyName, setterReadInclude, fieldReadInclude);
-
-        boolean writeIncludePresent = getterWriteInclude != null || setterWriteInclude != null || fieldWriteInclude != null;
-        boolean readIncludePresent = getterReadInclude != null || setterReadInclude != null || fieldReadInclude != null;
+        boolean includePresent = getterInclude != null || setterInclude != null || fieldInclude != null;
+        boolean writeIncludePresent = includePresent;
+        boolean readIncludePresent = includePresent;
 
         return new PropertyMetadata(
                 meta.propertyName,
@@ -158,28 +154,28 @@ final class AnnotationResolver {
         return fieldIgnore != null;
     }
 
-    private static boolean resolveWriteGetterIncluded(SavePointWriteInclude getterInclude, SavePointWriteInclude fieldInclude) {
+    private static boolean resolveWriteGetterIncluded(SavePointInclude getterInclude, SavePointInclude fieldInclude) {
         if (getterInclude != null) {
             return getterInclude.getter();
         }
         return fieldInclude != null && fieldInclude.getter();
     }
 
-    private static boolean resolveWriteSetterIncluded(SavePointWriteInclude setterInclude, SavePointWriteInclude fieldInclude) {
+    private static boolean resolveWriteSetterIncluded(SavePointInclude setterInclude, SavePointInclude fieldInclude) {
         if (setterInclude != null) {
             return setterInclude.setter();
         }
         return fieldInclude != null && fieldInclude.setter();
     }
 
-    private static boolean resolveReadGetterIncluded(SavePointReadInclude getterInclude, SavePointReadInclude fieldInclude) {
+    private static boolean resolveReadGetterIncluded(SavePointInclude getterInclude, SavePointInclude fieldInclude) {
         if (getterInclude != null) {
             return getterInclude.getter();
         }
         return fieldInclude != null && fieldInclude.getter();
     }
 
-    private static boolean resolveReadSetterIncluded(SavePointReadInclude setterInclude, SavePointReadInclude fieldInclude) {
+    private static boolean resolveReadSetterIncluded(SavePointInclude setterInclude, SavePointInclude fieldInclude) {
         if (setterInclude != null) {
             return setterInclude.setter();
         }
@@ -188,8 +184,8 @@ final class AnnotationResolver {
 
     private static String resolveWriteKey(
             String defaultProperty,
-            SavePointWriteInclude getterInclude,
-            SavePointWriteInclude fieldInclude
+            SavePointInclude getterInclude,
+            SavePointInclude fieldInclude
     ) {
         if (getterInclude != null && !getterInclude.key().isEmpty()) {
             return getterInclude.key();
@@ -202,8 +198,8 @@ final class AnnotationResolver {
 
     private static String resolveReadKey(
             String defaultProperty,
-            SavePointReadInclude setterInclude,
-            SavePointReadInclude fieldInclude
+            SavePointInclude setterInclude,
+            SavePointInclude fieldInclude
     ) {
         if (setterInclude != null && !setterInclude.key().isEmpty()) {
             return setterInclude.key();

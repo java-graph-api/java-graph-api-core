@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SavePointReadInclude {
-    boolean getter() default false;
+public @interface SavePointInclude {
+    boolean getter() default true;
 
     boolean setter() default true;
 

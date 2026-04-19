@@ -6,8 +6,7 @@ import org.graph.api.core.memory.ClassMetadata;
 import org.graph.api.core.memory.PropertyMetadata;
 import org.graph.api.core.memory.annotation.SavePointExclude;
 import org.graph.api.core.memory.annotation.SavePointIgnore;
-import org.graph.api.core.memory.annotation.SavePointReadInclude;
-import org.graph.api.core.memory.annotation.SavePointWriteInclude;
+import org.graph.api.core.memory.annotation.SavePointInclude;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -101,10 +100,10 @@ class GraphStateMergerTest {
         PropertyMetadata property = metadata.properties().get("name");
 
         assertTrue(property.writeGetterIncluded());
-        assertFalse(property.writeSetterIncluded());
+        assertTrue(property.writeSetterIncluded());
         assertEquals("player_name", property.writeKey());
 
-        assertFalse(property.readGetterIncluded());
+        assertTrue(property.readGetterIncluded());
         assertTrue(property.readSetterIncluded());
         assertEquals("player_name", property.readKey());
     }
@@ -204,8 +203,7 @@ class GraphStateMergerTest {
     @Setter
     @Getter
     private static class IncludeFieldState {
-        @SavePointWriteInclude(key = "player_name")
-        @SavePointReadInclude(key = "player_name")
+        @SavePointInclude(key = "player_name")
         private String name;
 
     }
@@ -213,25 +211,23 @@ class GraphStateMergerTest {
     @Setter
     @Getter
     private static class DefaultKeyIncludeState {
-        @SavePointWriteInclude
-        @SavePointReadInclude
+        @SavePointInclude
         private String name;
 
     }
 
     private static class MethodKeyPriorityState {
-        @SavePointWriteInclude(key = "field_key")
-        @SavePointReadInclude(key = "field_key")
+        @SavePointInclude(key = "field_key")
         private String value;
 
         @SuppressWarnings("unused")
-        @SavePointWriteInclude(key = "getter_key")
+        @SavePointInclude(key = "getter_key")
         public String getValue() {
             return value;
         }
 
         @SuppressWarnings("unused")
-        @SavePointReadInclude(key = "setter_key")
+        @SavePointInclude(key = "setter_key")
         public void setValue(String value) {
             this.value = value;
         }
@@ -240,10 +236,10 @@ class GraphStateMergerTest {
     @Setter
     @Getter
     private static class DuplicateWriteKeyState {
-        @SavePointWriteInclude(key = "hp")
+        @SavePointInclude(key = "hp")
         private int currentHp;
 
-        @SavePointWriteInclude(key = "hp")
+        @SavePointInclude(key = "hp")
         private int maxHp;
 
     }
@@ -254,13 +250,13 @@ class GraphStateMergerTest {
         private int maxHp;
 
         @SuppressWarnings("unused")
-        @SavePointReadInclude(key = "hp")
+        @SavePointInclude(key = "hp")
         public void setCurrentHp(int currentHp) {
             this.currentHp = currentHp;
         }
 
         @SuppressWarnings("unused")
-        @SavePointReadInclude(key = "hp")
+        @SavePointInclude(key = "hp")
         public void setMaxHp(int maxHp) {
             this.maxHp = maxHp;
         }
