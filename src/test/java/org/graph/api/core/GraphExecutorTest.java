@@ -4,6 +4,7 @@ import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.exception.TooManyNodeCallException;
 import org.graph.api.core.memory.GraphMemory;
+import org.graph.api.core.memory.GraphMemoryDefault;
 import org.graph.api.core.memory.SavePoint;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -169,6 +171,45 @@ class GraphExecutorTest {
         assertTrue(exception.getMessage().contains("start -> right"));
     }
 
+    @Test
+    void shouldKeepSessionIdAndChangeExecutionIdAfterInterruptAndResume() {
+        GraphMemory memory = new GraphMemoryDefault();
+
+        Node<ResumableState> start = node("start", s -> {
+            if (s.getStep() == 0) {
+                s.setStep(1);
+                s.toInterruptGraph();
+                return;
+            }
+            s.setStep(2);
+        });
+        Node<ResumableState> end = node("end", s -> s.setStep(3));
+
+        GraphExecutor<ResumableState> executor = new GraphSpecification<ResumableState>()
+                .options(GraphOptions.builder()
+                        .graphName("resume-execution-id")
+                        .saveAll(true)
+                        .build())
+                .memory(memory)
+                .begin(start)
+                .route(start, end)
+                .end(end);
+
+        ResumableState firstRunState = executor.execute(new ResumableState(), "resume-session");
+        var firstExecutionId = firstRunState.getExecutionId();
+
+        assertEquals(ExecutorStatus.INTERRUPT, firstRunState.getExecutorStatus());
+        assertEquals("resume-session", firstRunState.getSessionId());
+        assertEquals(1, firstRunState.getStep());
+
+        ResumableState resumedState = executor.execute(new ResumableState(), "resume-session");
+
+        assertEquals(ExecutorStatus.COMPLETED, resumedState.getExecutorStatus());
+        assertEquals("resume-session", resumedState.getSessionId());
+        assertEquals(3, resumedState.getStep());
+        assertNotEquals(firstExecutionId, resumedState.getExecutionId());
+    }
+
     private static GraphOptions options(String name) {
         return GraphOptions.builder()
                 .graphName(name)
@@ -231,4 +272,5 @@ class GraphExecutorTest {
     private static final class LoopState extends GraphState implements Serializable {
         private int hits;
     }
+
 }
