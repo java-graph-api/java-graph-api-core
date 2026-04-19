@@ -5,6 +5,8 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.NodeRouting;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
+import org.graph.api.core.merge.ReflectionStateMergeStrategy;
+import org.graph.api.core.merge.StateMergeStrategy;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.node.factory.NodeFactory;
 import org.graph.api.core.node.factory.NodeMap;
@@ -24,12 +26,18 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     private final RouteFactory<S> routeFactory = new RouteFactory<>();
     private final List<NodeAspect<? extends GraphState>> aspects;
     private final NodeFactory<S> nodeFactory;
+    private final StateMergeStrategy<S> mergeStrategy;
 
     public RouteSpecificationDefault(GraphOptions options, GraphMemory memory, Node<? super S> beginNode, List<NodeAspect<? extends GraphState>> aspects) {
+        this(options, memory, beginNode, aspects, new ReflectionStateMergeStrategy<>());
+    }
+
+    public RouteSpecificationDefault(GraphOptions options, GraphMemory memory, Node<? super S> beginNode, List<NodeAspect<? extends GraphState>> aspects, StateMergeStrategy<S> mergeStrategy) {
         this.aspects = aspects;
         this.memory = memory;
         this.options = options;
         this.nodeFactory = new NodeFactory<>(options, memory);
+        this.mergeStrategy = mergeStrategy;
         this.addBeginNode(beginNode);
     }
 
@@ -46,13 +54,13 @@ public final class RouteSpecificationDefault<S extends GraphState> implements Ro
     @Override
     public GraphExecutor<S> end(Node<? super S> target) {
         addEndNode(target);
-        return new GraphExecutor<>(getRoutes(), memory, options);
+        return new GraphExecutor<>(getRoutes(), memory, options, mergeStrategy);
     }
 
     @Override
     public GraphExecutor<S> end(Collection<Node<? super S>> targets) {
         targets.forEach(this::addEndNode);
-        return new GraphExecutor<>(getRoutes(), memory, options);
+        return new GraphExecutor<>(getRoutes(), memory, options, mergeStrategy);
     }
 
     private RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteConditional<? super S> conditional, Route.Type type) {

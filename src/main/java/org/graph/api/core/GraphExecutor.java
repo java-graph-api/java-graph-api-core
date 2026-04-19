@@ -2,8 +2,9 @@ package org.graph.api.core;
 
 import lombok.Builder;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.memory.merge.GraphStateMerger;
 import org.graph.api.core.memory.SavePoint;
+import org.graph.api.core.merge.ReflectionStateMergeStrategy;
+import org.graph.api.core.merge.StateMergeStrategy;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
@@ -17,12 +18,18 @@ public final class GraphExecutor<S extends GraphState> {
     private final GraphMemory memory;
     private final GraphOptions options;
     private final NodeRouting<S> nodeRouting;
+    private final StateMergeStrategy<S> mergeStrategy;
     private final NodeExecutor<S> nodeExecutor = new NodeExecutor<>();
 
     public GraphExecutor(NodeRouting<S> nodeRouting, GraphMemory memory, GraphOptions options) {
+        this(nodeRouting, memory, options, new ReflectionStateMergeStrategy<>());
+    }
+
+    public GraphExecutor(NodeRouting<S> nodeRouting, GraphMemory memory, GraphOptions options, StateMergeStrategy<S> mergeStrategy) {
         this.memory = memory;
         this.options = options;
         this.nodeRouting = nodeRouting;
+        this.mergeStrategy = Objects.requireNonNull(mergeStrategy, "mergeStrategy cannot be null");
     }
 
     public String getName() {
@@ -67,7 +74,7 @@ public final class GraphExecutor<S extends GraphState> {
         return getSavePoint(state)
                 .map(sp -> StartPoint.<S>builder()
                         .node((Node<S>) nodeRouting.getNode(sp.nodeName()))
-                        .state((S) GraphStateMerger.merge(sp.state(), state))
+                        .state(mergeStrategy.merge((S) sp.state(), state))
                         .build()
                 ).orElseGet(() -> StartPoint.<S>builder()
                         .node((Node<S>) nodeRouting.getBeginNode())
