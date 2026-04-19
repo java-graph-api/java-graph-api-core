@@ -5,11 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * @deprecated use {@link SavePointExclude}
- */
-@Deprecated
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SavePointIgnore {
+public @interface SavePointExclude {
+    boolean getter() default true;
+
+    boolean setter() default true;
 }
