@@ -134,6 +134,34 @@ class GraphAspectTest {
         );
     }
 
+    @Test
+    void shouldApplyAspectsAddedViaAspectsMethod() {
+        AspectState state = new AspectState();
+
+        Node<AspectState> start = node("start", s -> s.events.add("node:start"));
+        Node<AspectState> finish = node("finish", s -> s.events.add("node:finish"));
+
+        NodeAspect<AspectState> outer = new OrderedAspect("outer", 1);
+        NodeAspect<AspectState> inner = new OrderedAspect("inner", 10);
+
+        GraphExecutor<AspectState> executor = new GraphSpecification<AspectState>()
+                .options(options("aspect-list"))
+                .aspects(List.of(inner, outer))
+                .begin(start)
+                .route(start, finish)
+                .end(finish);
+
+        AspectState result = executor.execute(state, "aspect-list-session");
+
+        assertEquals(
+                List.of(
+                        "outer:before:start", "inner:before:start", "node:start", "inner:after:start", "outer:after:start",
+                        "outer:before:finish", "inner:before:finish", "node:finish", "inner:after:finish", "outer:after:finish"
+                ),
+                result.events
+        );
+    }
+
     private static GraphOptions options(String name) {
         return GraphOptions.builder().graphName(name).nodeCallLimit(100).build();
     }
