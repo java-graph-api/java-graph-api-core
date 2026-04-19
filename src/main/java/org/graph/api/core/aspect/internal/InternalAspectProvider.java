@@ -4,7 +4,7 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.memory.SavePointAspect;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.node.guard.NodeCallChecker;
+import org.graph.api.core.node.guard.NodeCallCheckerAspect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class InternalAspectProvider {
 
     public InternalAspectProvider(GraphMemory memory) {
         internalAspects.add(new SavePointAspect(memory));
-        internalAspects.add(new NodeCallChecker());
+        internalAspects.add(new NodeCallCheckerAspect());
     }
 
     public List<NodeAspect<? extends GraphState>> get() {

@@ -5,7 +5,7 @@ import org.graph.api.core.aspect.JoinPoint;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.exception.TooManyNodeCallException;
 
-public class NodeCallChecker implements NodeAspect<GraphState> {
+public class NodeCallCheckerAspect implements NodeAspect<GraphState> {
 
     @Override
     public void before(JoinPoint<GraphState> joinPoint) {
