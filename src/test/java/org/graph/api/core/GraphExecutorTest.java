@@ -218,6 +218,7 @@ class GraphExecutorTest {
         Node<ResumableState> start = node("start", s -> {
             if (s.getStep() == 0) {
                 s.setStep(1);
+                s.toSave();
                 s.toInterruptGraph();
                 return;
             }
@@ -226,10 +227,7 @@ class GraphExecutorTest {
         Node<ResumableState> end = node("end", s -> s.setStep(3));
 
         GraphDefinitionBuilder<ResumableState> graph = new GraphBuilderDefault<ResumableState>()
-                .options(GraphOptions.builder()
-                        .graphName("resume-execution-id")
-                        .saveAll(true)
-                        .build())
+                .options(options("resume-execution-id"))
                 .memory(memory)
                 .begin(start)
                 ;
