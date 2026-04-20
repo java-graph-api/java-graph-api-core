@@ -1,5 +1,7 @@
 package org.graph.api.core.memory;
 
+import org.graph.api.core.memory.point.SavePoint;
+
 import java.util.Optional;
 
 public interface GraphMemory {

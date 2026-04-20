@@ -1,4 +1,4 @@
-package org.graph.api.core.memory;
+package org.graph.api.core.memory.merge;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

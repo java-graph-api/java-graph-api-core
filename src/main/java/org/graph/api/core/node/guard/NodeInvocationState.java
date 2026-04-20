@@ -1,6 +1,6 @@
 package org.graph.api.core.node.guard;
 
-import org.graph.api.core.memory.SavePointState;
+import org.graph.api.core.memory.point.SavePointState;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

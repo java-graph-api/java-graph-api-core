@@ -1,5 +1,7 @@
 package org.graph.api.core.memory;
 
+import org.graph.api.core.memory.point.SavePoint;
+
 import java.io.*;
 import java.util.Map;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package org.graph.api.core.memory;
+package org.graph.api.core.memory.point;
 
 public abstract class SavePointState {
 

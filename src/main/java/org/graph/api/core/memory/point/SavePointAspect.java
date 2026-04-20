@@ -1,8 +1,9 @@
-package org.graph.api.core.memory;
+package org.graph.api.core.memory.point;
 
 import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.JoinPoint;
 import org.graph.api.core.aspect.NodeAspect;
+import org.graph.api.core.memory.GraphMemory;
 
 import java.util.Objects;
 

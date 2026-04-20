@@ -1,7 +1,6 @@
 package org.graph.api.core.memory.merge;
 
 import org.graph.api.core.memory.ClassMetadata;
-import org.graph.api.core.memory.PropertyMetadata;
 import org.graph.api.core.memory.annotation.SavePointExclude;
 import org.graph.api.core.memory.annotation.SavePointIgnore;
 import org.graph.api.core.memory.annotation.SavePointInclude;

@@ -7,7 +7,7 @@ import org.graph.api.core.builder.GraphBuilderDefault;
 import org.graph.api.core.builder.GraphDefinitionBuilder;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.InMemoryGraphMemory;
-import org.graph.api.core.memory.SavePoint;
+import org.graph.api.core.memory.point.SavePoint;
 import org.graph.api.core.merge.StateMergeStrategy;
 import org.graph.api.core.merge.UseIncomingStateStrategy;
 import org.graph.api.core.merge.UseSavedStateStrategy;

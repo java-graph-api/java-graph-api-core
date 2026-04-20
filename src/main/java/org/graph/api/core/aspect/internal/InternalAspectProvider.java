@@ -3,7 +3,7 @@ package org.graph.api.core.aspect.internal;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.memory.SavePointAspect;
+import org.graph.api.core.memory.point.SavePointAspect;
 import org.graph.api.core.node.guard.NodeInvocationLimitAspect;
 
 import java.util.ArrayList;
