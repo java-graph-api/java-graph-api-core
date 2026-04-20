@@ -2,14 +2,11 @@ package org.graph.api.core.route;
 
 import lombok.Getter;
 import org.graph.api.core.GraphState;
-import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.node.Node;
-
-import java.util.Objects;
 
 public final class Route<S extends GraphState> {
 
-//    @Getter
+    @Getter
     private final String source;
     @Getter
     private final String target;
@@ -23,28 +20,9 @@ public final class Route<S extends GraphState> {
         this.type = type;
     }
 
-    public String getSourceNodeName() {
-        return source;
-    }
-
-    public String getTargetNodeName() {
-        return target;
-    }
-
-    String getSource() {
-        if (source == null) {
-            throw GraphRoutingException.routeNotFound(target); // todo убрать проверку отсюда туда где она используется
-        }
-        return source;
-    }
-
     public boolean test(S state) {
-        if (isDefault()) {
+        if (isDefault() || isEnd()) {
             return true;
-        }
-
-        if (isEnd()) {
-            return true; // todo вообще наверное end роуты не должны проверяться на условие
         }
 
         return conditional.test(state);
@@ -66,7 +44,7 @@ public final class Route<S extends GraphState> {
         return type == Type.DEFAULT;
     }
 
-    public static <S extends GraphState> Builder<S > builder() {
+    public static <S extends GraphState> Builder<S> builder() {
         return new Builder<>();
     }
 
@@ -105,31 +83,8 @@ public final class Route<S extends GraphState> {
         }
 
         public Route<S> build() {
-            Objects.requireNonNull(type, "type cannot be null");
-            if (type == Type.CONDITIONAL) {
-                Objects.requireNonNull(source, "source cannot be null"); // todo correct message
-                Objects.requireNonNull(target, "target cannot be null"); // todo correct message
-                Objects.requireNonNull(conditional, "conditional cannot be null"); // todo correct message
-            } else if (type == Type.BEGIN) {
-                Objects.requireNonNull(target, "target cannot be null");  // todo correct message
-            } else if (type == Type.END) {
-                Objects.requireNonNull(source, "source cannot be null");  // todo correct message
-            } else {
-                Objects.requireNonNull(source, "source cannot be null"); // todo correct message
-                Objects.requireNonNull(target, "target cannot be null"); // todo correct message
-            }
-            if (type != Type.BEGIN) {
-                validate(source, target, type);
-            }
+            RouteValidator.validate(source, target, conditional, type);
             return new Route<>(source, target, conditional, type);
-        }
-
-        private void validate(String source, String target, Route.Type type) {
-            if (type == Route.Type.DEFAULT && source.equals(target)) {
-                throw new IllegalArgumentException(String.format(
-                        "Both nodes within the same default route have identical names. ['%s']", source)
-                );
-            }
         }
     }
 }
