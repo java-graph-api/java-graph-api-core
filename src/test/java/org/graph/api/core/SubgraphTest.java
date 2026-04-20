@@ -2,6 +2,8 @@ package org.graph.api.core;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.graph.api.core.builder.GraphBuilderDefault;
+import org.graph.api.core.builder.GraphDefinitionBuilder;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.InMemoryGraphMemory;
 import org.graph.api.core.node.Node;
@@ -23,15 +25,23 @@ class SubgraphTest {
 
     @Test
     void shouldUseNestedGraphNameAsSubgraphNodeName() {
-        GraphExecutor<MainState> innerExecutor = new GraphSpecification<MainState>()
+        GraphDefinitionBuilder<MainState> innerGraph = new GraphBuilderDefault<MainState>()
                 .options(options("inner-name"))
                 .begin(node("innerStart", s -> s.trace.add("inner-start")))
-                .end(node("innerEnd", s -> s.trace.add("inner-end")));
+                ;
 
-        GraphExecutor<NestedState> runnableExecutor = new GraphSpecification<NestedState>()
+        innerGraph.end(node("innerEnd", s -> s.trace.add("inner-end")));
+
+        GraphExecutor<MainState> innerExecutor = innerGraph.done();
+
+        GraphDefinitionBuilder<NestedState> runnableGraph = new GraphBuilderDefault<NestedState>()
                 .options(options("runnable-name"))
                 .begin(node("runStart", s -> s.events.add("run-start")))
-                .end(node("runEnd", s -> s.events.add("run-end")));
+                ;
+
+        runnableGraph.end(node("runEnd", s -> s.events.add("run-end")));
+
+        GraphExecutor<NestedState> runnableExecutor = runnableGraph.done();
 
         InnerSubgraph<MainState> innerSubgraph = new InnerSubgraph<>(innerExecutor);
         RunnableSubgraph<MainState, NestedState> runnableSubgraph = new RunnableSubgraph<>(
@@ -55,11 +65,17 @@ class SubgraphTest {
             s.trace.add("sub:finish");
         });
 
-        GraphExecutor<MainState> subExecutor = new GraphSpecification<MainState>()
+        GraphDefinitionBuilder<MainState> subGraph = new GraphBuilderDefault<MainState>()
                 .options(options("shared-state-subgraph"))
                 .begin(subStart)
-                .route(subStart, subFinish)
-                .end(subFinish);
+                ;
+
+        subGraph.from(subStart)
+                .defaultTo(subFinish);
+
+        subGraph.end(subFinish);
+
+        GraphExecutor<MainState> subExecutor = subGraph.done();
 
         InnerSubgraph<MainState> innerSubgraph = new InnerSubgraph<>(subExecutor);
 
@@ -72,12 +88,20 @@ class SubgraphTest {
             s.trace.add("main:finish");
         });
 
-        GraphExecutor<MainState> mainExecutor = new GraphSpecification<MainState>()
+        GraphDefinitionBuilder<MainState> mainGraph = new GraphBuilderDefault<MainState>()
                 .options(options("main-with-inner-subgraph"))
                 .begin(start)
-                .route(start, innerSubgraph)
-                .route(innerSubgraph, finish)
-                .end(finish);
+                ;
+
+        mainGraph.from(start)
+                .defaultTo(innerSubgraph);
+
+        mainGraph.from(innerSubgraph)
+                .defaultTo(finish);
+
+        mainGraph.end(finish);
+
+        GraphExecutor<MainState> mainExecutor = mainGraph.done();
 
         MainState result = mainExecutor.execute(new MainState(), "inner-subgraph-session");
 
@@ -100,11 +124,17 @@ class SubgraphTest {
             s.events.add("nested:finish");
         });
 
-        GraphExecutor<NestedState> nestedExecutor = new GraphSpecification<NestedState>()
+        GraphDefinitionBuilder<NestedState> nestedGraph = new GraphBuilderDefault<NestedState>()
                 .options(options("runnable-subgraph"))
                 .begin(nestedStart)
-                .route(nestedStart, nestedFinish)
-                .end(nestedFinish);
+                ;
+
+        nestedGraph.from(nestedStart)
+                .defaultTo(nestedFinish);
+
+        nestedGraph.end(nestedFinish);
+
+        GraphExecutor<NestedState> nestedExecutor = nestedGraph.done();
 
         RunnableSubgraph<MainState, NestedState> runnableSubgraph = new RunnableSubgraph<>(
                 state -> new NestedState(state.counter),
@@ -121,12 +151,20 @@ class SubgraphTest {
         });
         Node<MainState> finish = node("finish", s -> s.trace.add("main:finish"));
 
-        GraphExecutor<MainState> mainExecutor = new GraphSpecification<MainState>()
+        GraphDefinitionBuilder<MainState> mainGraph = new GraphBuilderDefault<MainState>()
                 .options(options("main-with-runnable-subgraph"))
                 .begin(start)
-                .route(start, runnableSubgraph)
-                .route(runnableSubgraph, finish)
-                .end(finish);
+                ;
+
+        mainGraph.from(start)
+                .defaultTo(runnableSubgraph);
+
+        mainGraph.from(runnableSubgraph)
+                .defaultTo(finish);
+
+        mainGraph.end(finish);
+
+        GraphExecutor<MainState> mainExecutor = mainGraph.done();
 
         MainState result = mainExecutor.execute(new MainState(), "runnable-subgraph-session");
 
@@ -155,12 +193,18 @@ class SubgraphTest {
             s.trace.add("sub:finish");
         });
 
-        GraphExecutor<MainState> subExecutor = new GraphSpecification<MainState>()
+        GraphDefinitionBuilder<MainState> subGraph = new GraphBuilderDefault<MainState>()
                 .memory(memory)
                 .options(GraphOptions.builder().graphName("inner-resume").build())
                 .begin(subStart)
-                .route(subStart, subFinish)
-                .end(subFinish);
+                ;
+
+        subGraph.from(subStart)
+                .defaultTo(subFinish);
+
+        subGraph.end(subFinish);
+
+        GraphExecutor<MainState> subExecutor = subGraph.done();
 
         InnerSubgraph<MainState> innerSubgraph = new InnerSubgraph<>(subExecutor);
 
@@ -173,13 +217,21 @@ class SubgraphTest {
             s.trace.add("main:finish");
         });
 
-        GraphExecutor<MainState> mainExecutor = new GraphSpecification<MainState>()
+        GraphDefinitionBuilder<MainState> mainGraph = new GraphBuilderDefault<MainState>()
                 .memory(memory)
                 .options(GraphOptions.builder().graphName("main-resume").build())
                 .begin(start)
-                .route(start, innerSubgraph)
-                .route(innerSubgraph, finish)
-                .end(finish);
+                ;
+
+        mainGraph.from(start)
+                .defaultTo(innerSubgraph);
+
+        mainGraph.from(innerSubgraph)
+                .defaultTo(finish);
+
+        mainGraph.end(finish);
+
+        GraphExecutor<MainState> mainExecutor = mainGraph.done();
 
         MainState firstRun = mainExecutor.execute(new MainState(), "shared-session");
 

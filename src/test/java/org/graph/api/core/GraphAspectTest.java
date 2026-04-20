@@ -3,6 +3,8 @@ package org.graph.api.core;
 import org.graph.api.core.aspect.LoggingAspect;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.ProcessingJoinPoint;
+import org.graph.api.core.builder.GraphBuilderDefault;
+import org.graph.api.core.builder.GraphDefinitionBuilder;
 import org.graph.api.core.node.AbstractNode;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
@@ -40,12 +42,18 @@ class GraphAspectTest {
             }
         };
 
-        GraphExecutor<AspectState> executor = new GraphSpecification<AspectState>()
+        GraphDefinitionBuilder<AspectState> graph = new GraphBuilderDefault<AspectState>()
                 .options(options("aspect-single"))
                 .aspect(auditAspect)
                 .begin(start)
-                .route(start, finish)
-                .end(finish);
+                ;
+
+        graph.from(start)
+                .defaultTo(finish);
+
+        graph.end(finish);
+
+        GraphExecutor<AspectState> executor = graph.done();
 
         AspectState result = executor.execute(state, "aspect-1");
 
@@ -71,14 +79,22 @@ class GraphAspectTest {
         NodeAspect<AspectState> outer = new OrderedAspect("outer", 1);
         NodeAspect<AspectState> inner = new OrderedAspect("inner", 10);
 
-        GraphExecutor<AspectState> executor = new GraphSpecification<AspectState>()
+        GraphDefinitionBuilder<AspectState> graph = new GraphBuilderDefault<AspectState>()
                 .options(options("aspect-order"))
                 .aspect(inner)
                 .aspect(outer)
                 .begin(start)
-                .route(start, middle)
-                .route(middle, finish)
-                .end(finish);
+                ;
+
+        graph.from(start)
+                .defaultTo(middle);
+
+        graph.from(middle)
+                .defaultTo(finish);
+
+        graph.end(finish);
+
+        GraphExecutor<AspectState> executor = graph.done();
 
         AspectState result = executor.execute(state, "aspect-2");
 
@@ -103,7 +119,7 @@ class GraphAspectTest {
         SpyLoggingAspect loggingAspect = new SpyLoggingAspect();
         NodeAspect<AspectState> customAspect = new NodeAspect<>() {
             @Override
-            public int order() {
+            public int getOrder() {
                 return 100;
             }
 
@@ -115,13 +131,19 @@ class GraphAspectTest {
             }
         };
 
-        GraphExecutor<AspectState> executor = new GraphSpecification<AspectState>()
+        GraphDefinitionBuilder<AspectState> graph = new GraphBuilderDefault<AspectState>()
                 .options(options("aspect-logging"))
                 .aspect(customAspect)
                 .aspect(loggingAspect)
                 .begin(start)
-                .route(start, finish)
-                .end(finish);
+                ;
+
+        graph.from(start)
+                .defaultTo(finish);
+
+        graph.end(finish);
+
+        GraphExecutor<AspectState> executor = graph.done();
 
         AspectState result = executor.execute(state, "aspect-logging-session");
 
@@ -144,12 +166,18 @@ class GraphAspectTest {
         NodeAspect<AspectState> outer = new OrderedAspect("outer", 1);
         NodeAspect<AspectState> inner = new OrderedAspect("inner", 10);
 
-        GraphExecutor<AspectState> executor = new GraphSpecification<AspectState>()
+        GraphDefinitionBuilder<AspectState> graph = new GraphBuilderDefault<AspectState>()
                 .options(options("aspect-list"))
                 .aspects(List.of(inner, outer))
                 .begin(start)
-                .route(start, finish)
-                .end(finish);
+                ;
+
+        graph.from(start)
+                .defaultTo(finish);
+
+        graph.end(finish);
+
+        GraphExecutor<AspectState> executor = graph.done();
 
         AspectState result = executor.execute(state, "aspect-list-session");
 
@@ -170,7 +198,7 @@ class GraphAspectTest {
         return new TestNode<>(name, action);
     }
 
-    private record OrderedAspect(String name, int order) implements NodeAspect<AspectState> {
+    private record OrderedAspect(String name, int getOrder) implements NodeAspect<AspectState> {
 
         @Override
             public void around(ProcessingJoinPoint<AspectState> joinPoint) {
