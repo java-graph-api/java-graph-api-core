@@ -3,7 +3,6 @@ package org.graph.api.core;
 import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.exception.NodeInvocationLimitExceededException;
-import org.graph.api.core.exception.TooManyNodeCallException;
 import org.graph.api.core.builder.GraphBuilderDefault;
 import org.graph.api.core.builder.GraphDefinitionBuilder;
 import org.graph.api.core.memory.GraphMemory;
@@ -59,8 +58,7 @@ class GraphExecutorTest {
 
         GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("complex-routing"))
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(decide);
@@ -100,11 +98,13 @@ class GraphExecutorTest {
         Node<LoopState> loop = node("loop", s -> s.hits += 1, 3);
         Node<LoopState> finish = node("finish", s -> s.hits += 1000);
 
-        GraphExecutor<LoopState> executor = new GraphSpecification<LoopState>()
+        var graph = new GraphBuilderDefault<LoopState>()
                 .options(options("loop-guard"))
                 .begin(loop)
-                .route(loop, loop, s -> true)
-                .end(finish);
+                .from(loop).defaultTo(loop);
+
+        graph.end(finish);
+        GraphExecutor<LoopState> executor = graph.done();
 
         NodeInvocationLimitExceededException exception = assertThrows(
                 NodeInvocationLimitExceededException.class,
@@ -140,8 +140,7 @@ class GraphExecutorTest {
         GraphDefinitionBuilder<ResumeState> graph = new GraphBuilderDefault<ResumeState>()
                 .options(options("not-found"))
                 .memory(memory)
-                .begin(known)
-                ;
+                .begin(known);
 
         graph.end(known);
 
@@ -162,8 +161,7 @@ class GraphExecutorTest {
 
         GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("missing-route"))
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.end(detachedEnd);
 
@@ -185,8 +183,7 @@ class GraphExecutorTest {
 
         GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("multiple-routes"))
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .to(left).when(s -> s.value > 0)
@@ -224,8 +221,7 @@ class GraphExecutorTest {
         GraphDefinitionBuilder<ResumableState> graph = new GraphBuilderDefault<ResumableState>()
                 .options(options("resume-execution-id"))
                 .memory(memory)
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(end);
@@ -261,8 +257,7 @@ class GraphExecutorTest {
                 .options(options("merge-use-saved"))
                 .memory(memory)
                 .mergeStrategy(new UseSavedStateStrategy<>())
-                .begin(start)
-                ;
+                .begin(start);
 
         graph = graph.from(start)
                 .defaultTo(end);
@@ -322,8 +317,7 @@ class GraphExecutorTest {
                 .options(options("merge-custom"))
                 .memory(memory)
                 .mergeStrategy(custom)
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(end);
@@ -355,8 +349,7 @@ class GraphExecutorTest {
                 .options(options("merge-wiring"))
                 .memory(memory)
                 .mergeStrategy(strategy)
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(end);
