@@ -1,10 +1,9 @@
-package org.graph.api.core.node.factory;
+package org.graph.api.core.node;
 
 import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.aspect.internal.InternalAspectProvider;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 
 import java.util.List;

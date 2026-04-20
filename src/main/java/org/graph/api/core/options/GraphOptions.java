@@ -14,6 +14,4 @@ public class GraphOptions {
     @Builder.Default
     private int nodeCallLimit = 100;
 
-    @Builder.Default
-    private boolean saveAll = false;
 }

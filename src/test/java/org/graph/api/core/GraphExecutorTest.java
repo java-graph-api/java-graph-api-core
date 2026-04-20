@@ -3,6 +3,8 @@ package org.graph.api.core;
 import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.exception.TooManyNodeCallException;
+import org.graph.api.core.builder.GraphBuilderDefault;
+import org.graph.api.core.builder.GraphDefinitionBuilder;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.InMemoryGraphMemory;
 import org.graph.api.core.memory.SavePoint;
@@ -54,18 +56,32 @@ class GraphExecutorTest {
             s.visits.add("subtractOne");
         });
 
-        GraphExecutor<WorkflowState> executor = new GraphSpecification<WorkflowState>()
+        GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("complex-routing"))
                 .begin(start)
-                .route(start, decide)
-                .route(decide, addTwo, s -> s.pass < 2)
-                .route(decide, addOne, s -> s.pass >= 2 && s.value < 5)
-                .route(decide, subtractOne)
-                .route(addTwo, checkpoint)
-                .route(addOne, checkpoint)
-                .route(checkpoint, decide, s -> s.value % 2 == 0 && s.pass < 4)
-                .route(checkpoint, subtractOne)
-                .end(subtractOne);
+                ;
+
+        graph.from(start)
+                .defaultTo(decide);
+
+        graph.from(decide)
+                .to(addTwo).when(s -> s.pass < 2)
+                .to(addOne).when(s -> s.pass >= 2 && s.value < 5)
+                .defaultTo(subtractOne);
+
+        graph.from(addTwo)
+                .defaultTo(checkpoint);
+
+        graph.from(addOne)
+                .defaultTo(checkpoint);
+
+        graph.from(checkpoint)
+                .to(decide).when(s -> s.value % 2 == 0 && s.pass < 4)
+                .defaultTo(subtractOne);
+
+        graph.end(subtractOne);
+
+        GraphExecutor<WorkflowState> executor = graph.done();
 
         WorkflowState result = executor.execute(state, "complex-session");
 
@@ -83,11 +99,17 @@ class GraphExecutorTest {
         Node<LoopState> loop = node("loop", s -> s.hits += 1, 3);
         Node<LoopState> finish = node("finish", s -> s.hits += 1000);
 
-        GraphExecutor<LoopState> executor = new GraphSpecification<LoopState>()
+        GraphDefinitionBuilder<LoopState> graph = new GraphBuilderDefault<LoopState>()
                 .options(options("loop-guard"))
                 .begin(loop)
-                .route(loop, loop, s -> true)
-                .end(finish);
+                ;
+
+        graph.from(loop)
+                .to(loop).when(s -> true);
+
+        graph.end(finish);
+
+        GraphExecutor<LoopState> executor = graph.done();
 
         TooManyNodeCallException exception = assertThrows(
                 TooManyNodeCallException.class,
@@ -120,11 +142,15 @@ class GraphExecutorTest {
             }
         };
 
-        GraphExecutor<ResumeState> executor = new GraphSpecification<ResumeState>()
+        GraphDefinitionBuilder<ResumeState> graph = new GraphBuilderDefault<ResumeState>()
                 .options(options("not-found"))
                 .memory(memory)
                 .begin(known)
-                .end(known);
+                ;
+
+        graph.end(known);
+
+        GraphExecutor<ResumeState> executor = graph.done();
 
         GraphNodeNotFoundException exception = assertThrows(
                 GraphNodeNotFoundException.class,
@@ -139,10 +165,14 @@ class GraphExecutorTest {
         Node<WorkflowState> start = node("start", s -> s.value += 1);
         Node<WorkflowState> detachedEnd = node("detachedEnd", s -> s.value += 100);
 
-        GraphExecutor<WorkflowState> executor = new GraphSpecification<WorkflowState>()
+        GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("missing-route"))
                 .begin(start)
-                .end(detachedEnd);
+                ;
+
+        graph.end(detachedEnd);
+
+        GraphExecutor<WorkflowState> executor = graph.done();
 
         GraphRoutingException exception = assertThrows(
                 GraphRoutingException.class,
@@ -158,12 +188,18 @@ class GraphExecutorTest {
         Node<WorkflowState> left = node("left", s -> s.visits.add("left"));
         Node<WorkflowState> right = node("right", s -> s.visits.add("right"));
 
-        GraphExecutor<WorkflowState> executor = new GraphSpecification<WorkflowState>()
+        GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("multiple-routes"))
                 .begin(start)
-                .route(start, left, s -> s.value > 0)
-                .route(start, right, s -> s.value >= 10)
-                .end(List.of(left, right));
+                ;
+
+        graph.from(start)
+                .to(left).when(s -> s.value > 0)
+                .to(right).when(s -> s.value >= 10);
+
+        graph.end(List.of(left, right));
+
+        GraphExecutor<WorkflowState> executor = graph.done();
 
         GraphRoutingException exception = assertThrows(
                 GraphRoutingException.class,
@@ -182,6 +218,7 @@ class GraphExecutorTest {
         Node<ResumableState> start = node("start", s -> {
             if (s.getStep() == 0) {
                 s.setStep(1);
+                s.toSave();
                 s.toInterruptGraph();
                 return;
             }
@@ -189,15 +226,18 @@ class GraphExecutorTest {
         });
         Node<ResumableState> end = node("end", s -> s.setStep(3));
 
-        GraphExecutor<ResumableState> executor = new GraphSpecification<ResumableState>()
-                .options(GraphOptions.builder()
-                        .graphName("resume-execution-id")
-                        .saveAll(true)
-                        .build())
+        GraphDefinitionBuilder<ResumableState> graph = new GraphBuilderDefault<ResumableState>()
+                .options(options("resume-execution-id"))
                 .memory(memory)
                 .begin(start)
-                .route(start, end)
-                .end(end);
+                ;
+
+        graph.from(start)
+                .defaultTo(end);
+
+        graph.end(end);
+
+        GraphExecutor<ResumableState> executor = graph.done();
 
         ResumableState firstRunState = executor.execute(new ResumableState(), "resume-session");
         var firstExecutionId = firstRunState.getExecutionId();
@@ -222,13 +262,19 @@ class GraphExecutorTest {
         Node<MergeState> start = node("start", s -> s.step += 1);
         Node<MergeState> end = node("end", s -> s.step += 1);
 
-        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+        GraphDefinitionBuilder<MergeState> graph = new GraphBuilderDefault<MergeState>()
                 .options(options("merge-use-saved"))
                 .memory(memory)
                 .mergeStrategy(new UseSavedStateStrategy<>())
                 .begin(start)
-                .route(start, end)
-                .end(end);
+                ;
+
+        graph = graph.from(start)
+                .defaultTo(end);
+
+        graph.end(end);
+
+        GraphExecutor<MergeState> executor = graph.done();
 
         MergeState result = executor.execute(mergeState(999, 5, "incoming"), "merge-use-saved-session");
 
@@ -243,13 +289,18 @@ class GraphExecutorTest {
         Node<MergeState> start = node("start", s -> s.step += 1);
         Node<MergeState> end = node("end", s -> s.step += 1);
 
-        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+        GraphDefinitionBuilder<MergeState> graph = new GraphBuilderDefault<MergeState>()
                 .options(options("merge-use-incoming"))
                 .memory(memory)
                 .mergeStrategy(new UseIncomingStateStrategy<>())
-                .begin(start)
-                .route(start, end)
-                .end(end);
+                .begin(start);
+
+        graph.from(start)
+                .defaultTo(end);
+
+        graph.end(end);
+
+        GraphExecutor<MergeState> executor = graph.done();
 
         MergeState result = executor.execute(mergeState(999, 5, "incoming"), "merge-use-incoming-session");
 
@@ -272,13 +323,19 @@ class GraphExecutorTest {
             return merged;
         };
 
-        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+        GraphDefinitionBuilder<MergeState> graph = new GraphBuilderDefault<MergeState>()
                 .options(options("merge-custom"))
                 .memory(memory)
                 .mergeStrategy(custom)
                 .begin(start)
-                .route(start, end)
-                .end(end);
+                ;
+
+        graph.from(start)
+                .defaultTo(end);
+
+        graph.end(end);
+
+        GraphExecutor<MergeState> executor = graph.done();
 
         MergeState result = executor.execute(mergeState(999, 5, "incoming"), "merge-custom-session");
 
@@ -299,13 +356,19 @@ class GraphExecutorTest {
         Node<MergeState> start = node("start", s -> s.step += 1);
         Node<MergeState> end = node("end", s -> s.step += 1);
 
-        GraphExecutor<MergeState> executor = new GraphSpecification<MergeState>()
+        GraphDefinitionBuilder<MergeState> graph = new GraphBuilderDefault<MergeState>()
                 .options(options("merge-wiring"))
                 .memory(memory)
                 .mergeStrategy(strategy)
                 .begin(start)
-                .route(start, end)
-                .end(end);
+                ;
+
+        graph.from(start)
+                .defaultTo(end);
+
+        graph.end(end);
+
+        GraphExecutor<MergeState> executor = graph.done();
 
         executor.execute(mergeState(2, 4, "incoming"), "merge-wiring-session");
 
@@ -313,6 +376,7 @@ class GraphExecutorTest {
     }
 
 
+    @SuppressWarnings("SameParameterValue")
     private static GraphMemory memoryWithSavepoint(String graphName, String nodeName, GraphState state) {
         return new GraphMemory() {
             @Override

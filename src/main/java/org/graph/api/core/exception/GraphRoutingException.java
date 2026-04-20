@@ -26,7 +26,7 @@ public class GraphRoutingException extends GraphException {
         }
 
         var routesInfo = routesFiltered.stream()
-                .map(route -> route.getSourceNodeName() + " -> " + route.getTargetNodeName())
+                .map(route -> route.getSource() + " -> " + route.getTarget())
                 .toList();
 
         var message = String.format("Multiple routes found for node '%s': %s", nodeName, routesInfo);
