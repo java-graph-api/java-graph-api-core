@@ -2,7 +2,6 @@ package org.graph.api.core.memory.merge;
 
 import org.graph.api.core.memory.ClassMetadata;
 import org.graph.api.core.memory.annotation.SavePointExclude;
-import org.graph.api.core.memory.annotation.SavePointIgnore;
 import org.graph.api.core.memory.annotation.SavePointInclude;
 
 import java.beans.Introspector;
@@ -76,12 +75,8 @@ final class AnnotationResolver {
         SavePointExclude setterExclude = annotationFromSetter(meta.setter, SavePointExclude.class);
         SavePointExclude fieldExclude = annotationFromField(meta.field, SavePointExclude.class);
 
-        SavePointIgnore getterIgnore = annotationFromGetter(meta.getter, SavePointIgnore.class);
-        SavePointIgnore setterIgnore = annotationFromSetter(meta.setter, SavePointIgnore.class);
-        SavePointIgnore fieldIgnore = annotationFromField(meta.field, SavePointIgnore.class);
-
-        boolean getterExcluded = resolveGetterExcluded(getterExclude, getterIgnore, fieldExclude, fieldIgnore);
-        boolean setterExcluded = resolveSetterExcluded(setterExclude, setterIgnore, fieldExclude, fieldIgnore);
+        boolean getterExcluded = resolveGetterExcluded(getterExclude, fieldExclude);
+        boolean setterExcluded = resolveSetterExcluded(setterExclude, fieldExclude);
 
         SavePointInclude getterInclude = annotationFromGetter(meta.getter, SavePointInclude.class);
         SavePointInclude setterInclude = annotationFromSetter(meta.setter, SavePointInclude.class);
@@ -96,8 +91,6 @@ final class AnnotationResolver {
         String readKey = resolveReadKey(meta.propertyName, setterInclude, fieldInclude);
 
         boolean includePresent = getterInclude != null || setterInclude != null || fieldInclude != null;
-        boolean writeIncludePresent = includePresent;
-        boolean readIncludePresent = includePresent;
 
         return new PropertyMetadata(
                 meta.propertyName,
@@ -112,45 +105,29 @@ final class AnnotationResolver {
                 readSetterIncluded,
                 writeKey,
                 readKey,
-                writeIncludePresent,
-                readIncludePresent
+                includePresent,
+                includePresent
         );
     }
 
     private static boolean resolveGetterExcluded(
             SavePointExclude methodExclude,
-            SavePointIgnore methodIgnore,
-            SavePointExclude fieldExclude,
-            SavePointIgnore fieldIgnore
+            SavePointExclude fieldExclude
     ) {
         if (methodExclude != null) {
             return methodExclude.getter();
         }
-        if (methodIgnore != null) {
-            return true;
-        }
-        if (fieldExclude != null) {
-            return fieldExclude.getter();
-        }
-        return fieldIgnore != null;
+        return fieldExclude != null && fieldExclude.getter();
     }
 
     private static boolean resolveSetterExcluded(
             SavePointExclude methodExclude,
-            SavePointIgnore methodIgnore,
-            SavePointExclude fieldExclude,
-            SavePointIgnore fieldIgnore
+            SavePointExclude fieldExclude
     ) {
         if (methodExclude != null) {
             return methodExclude.setter();
         }
-        if (methodIgnore != null) {
-            return true;
-        }
-        if (fieldExclude != null) {
-            return fieldExclude.setter();
-        }
-        return fieldIgnore != null;
+        return fieldExclude != null && fieldExclude.setter();
     }
 
     private static boolean resolveWriteGetterIncluded(SavePointInclude getterInclude, SavePointInclude fieldInclude) {

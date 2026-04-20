@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.graph.api.core.memory.ClassMetadata;
 import org.graph.api.core.memory.annotation.SavePointExclude;
-import org.graph.api.core.memory.annotation.SavePointIgnore;
 import org.graph.api.core.memory.annotation.SavePointInclude;
 import org.junit.jupiter.api.Test;
 
@@ -78,19 +77,6 @@ class GraphStateMergerTest {
         GraphStateMerger.merge(source, target);
 
         assertEquals("new", target.getValue());
-    }
-
-    @Test
-    void shouldSupportDeprecatedSavePointIgnore() {
-        IgnoreState source = new IgnoreState();
-        source.setValue("new");
-
-        IgnoreState target = new IgnoreState();
-        target.setValue("old");
-
-        GraphStateMerger.merge(source, target);
-
-        assertEquals("old", target.getValue());
     }
 
     @Test
@@ -185,18 +171,6 @@ class GraphStateMergerTest {
         public void setValue(String value) {
             this.value = value;
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Setter
-    private static class IgnoreState {
-        private String value;
-
-        @SavePointIgnore
-        public String getValue() {
-            return value;
-        }
-
     }
 
     @Setter
