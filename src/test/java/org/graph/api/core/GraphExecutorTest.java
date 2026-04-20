@@ -218,6 +218,7 @@ class GraphExecutorTest {
         Node<ResumableState> start = node("start", s -> {
             if (s.getStep() == 0) {
                 s.setStep(1);
+                s.toSave();
                 s.toInterruptGraph();
                 return;
             }
