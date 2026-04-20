@@ -96,12 +96,15 @@ class GraphExecutorTest {
     @Test
     void shouldThrowNodeInvocationLimitExceededExceptionForInfiniteLoop() {
         Node<LoopState> loop = node("loop", s -> s.hits += 1, 3);
+        Node<LoopState> pingPong = node("pingPong", s -> s.hits += 10);
         Node<LoopState> finish = node("finish", s -> s.hits += 1000);
 
         var graph = new GraphBuilderDefault<LoopState>()
                 .options(options("loop-guard"))
                 .begin(loop)
-                .from(loop).defaultTo(loop);
+                .from(loop).defaultTo(pingPong);
+
+        graph.from(pingPong).defaultTo(loop);
 
         graph.end(finish);
         GraphExecutor<LoopState> executor = graph.done();
