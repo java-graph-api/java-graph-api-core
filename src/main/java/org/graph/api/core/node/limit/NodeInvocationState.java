@@ -1,4 +1,4 @@
-package org.graph.api.core.node.guard;
+package org.graph.api.core.node.limit;
 
 import org.graph.api.core.memory.point.SavePointState;
 

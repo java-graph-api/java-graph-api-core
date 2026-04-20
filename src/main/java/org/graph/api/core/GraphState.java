@@ -1,6 +1,6 @@
 package org.graph.api.core;
 
-import org.graph.api.core.node.guard.NodeInvocationState;
+import org.graph.api.core.node.limit.NodeInvocationState;
 
 import java.util.UUID;
 

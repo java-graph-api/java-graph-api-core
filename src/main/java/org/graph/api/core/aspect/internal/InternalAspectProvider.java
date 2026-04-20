@@ -4,7 +4,7 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.point.SavePointAspect;
-import org.graph.api.core.node.guard.NodeInvocationLimitAspect;
+import org.graph.api.core.node.limit.NodeInvocationLimitAspect;
 
 import java.util.ArrayList;
 import java.util.List;
