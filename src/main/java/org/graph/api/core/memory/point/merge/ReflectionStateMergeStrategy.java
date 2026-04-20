@@ -1,4 +1,4 @@
-package org.graph.api.core.merge;
+package org.graph.api.core.memory.point.merge;
 
 import org.graph.api.core.GraphState;
 import org.graph.api.core.memory.merge.GraphStateMerger;

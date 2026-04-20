@@ -5,7 +5,7 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.NodeRouting;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.merge.StateMergeStrategy;
+import org.graph.api.core.memory.point.merge.StateMergeStrategy;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.node.NodeFactory;
 import org.graph.api.core.node.NodeMap;

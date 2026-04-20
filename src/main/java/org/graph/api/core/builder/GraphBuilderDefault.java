@@ -3,8 +3,8 @@ package org.graph.api.core.builder;
 import org.graph.api.core.GraphState;
 import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
-import org.graph.api.core.merge.ReflectionStateMergeStrategy;
-import org.graph.api.core.merge.StateMergeStrategy;
+import org.graph.api.core.memory.point.merge.ReflectionStateMergeStrategy;
+import org.graph.api.core.memory.point.merge.StateMergeStrategy;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.options.GraphOptions;
 
