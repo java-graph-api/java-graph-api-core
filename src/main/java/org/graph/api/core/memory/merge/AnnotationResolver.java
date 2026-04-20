@@ -91,8 +91,6 @@ final class AnnotationResolver {
         String readKey = resolveReadKey(meta.propertyName, setterInclude, fieldInclude);
 
         boolean includePresent = getterInclude != null || setterInclude != null || fieldInclude != null;
-        boolean writeIncludePresent = includePresent;
-        boolean readIncludePresent = includePresent;
 
         return new PropertyMetadata(
                 meta.propertyName,
@@ -107,8 +105,8 @@ final class AnnotationResolver {
                 readSetterIncluded,
                 writeKey,
                 readKey,
-                writeIncludePresent,
-                readIncludePresent
+                includePresent,
+                includePresent
         );
     }
 
