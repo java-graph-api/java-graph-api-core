@@ -22,7 +22,7 @@ public class SavePointAspect implements NodeAspect<GraphState> {
     @Override
     public void after(JoinPoint<GraphState> joinPoint) {
         var state = (SavePointState) joinPoint.getState();
-        if (state.isSave() || joinPoint.getOptions().isSaveAll()) {
+        if (state.isSave()) {
             ensureGraphMemory();
             String nodeName = state.getSaveNodeName() == null ? joinPoint.getCurrentNodeName() : state.getSaveNodeName();
             var graphName = joinPoint.getOptions().getGraphName();

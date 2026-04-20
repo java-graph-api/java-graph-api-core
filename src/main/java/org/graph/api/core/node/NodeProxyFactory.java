@@ -32,7 +32,7 @@ public final class NodeProxyFactory<S extends GraphState> {
         }
 
         List<NodeAspect<? extends GraphState>> sortedAspects = aspects.stream()
-                .sorted(Comparator.comparingInt(NodeAspect::order))
+                .sorted(Comparator.comparingInt(NodeAspect::getOrder))
                 .toList();
 
         InvocationHandler handler = (proxy, method, args) -> {

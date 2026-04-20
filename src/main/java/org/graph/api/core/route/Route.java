@@ -105,22 +105,28 @@ public final class Route<S extends GraphState> {
         }
 
         public Route<S> build() {
-            Objects.requireNonNull(type, "type cannot be null");
+            Objects.requireNonNull(type, "Route type must not be null");
+
             if (type == Type.CONDITIONAL) {
-                Objects.requireNonNull(source, "source cannot be null"); // todo correct message
-                Objects.requireNonNull(target, "target cannot be null"); // todo correct message
-                Objects.requireNonNull(conditional, "conditional cannot be null"); // todo correct message
+                Objects.requireNonNull(source, "Source node must not be null for a CONDITIONAL route");
+                Objects.requireNonNull(target, "Target node must not be null for a CONDITIONAL route");
+                Objects.requireNonNull(conditional, "Conditional predicate must not be null for a CONDITIONAL route");
+
             } else if (type == Type.BEGIN) {
-                Objects.requireNonNull(target, "target cannot be null");  // todo correct message
+                Objects.requireNonNull(target, "Target node must not be null for a BEGIN route");
+
             } else if (type == Type.END) {
-                Objects.requireNonNull(source, "source cannot be null");  // todo correct message
+                Objects.requireNonNull(source, "Source node must not be null for an END route");
+
             } else {
-                Objects.requireNonNull(source, "source cannot be null"); // todo correct message
-                Objects.requireNonNull(target, "target cannot be null"); // todo correct message
+                Objects.requireNonNull(source, "Source node must not be null for a DEFAULT route");
+                Objects.requireNonNull(target, "Target node must not be null for a DEFAULT route");
             }
+
             if (type != Type.BEGIN) {
                 validate(source, target, type);
             }
+
             return new Route<>(source, target, conditional, type);
         }
 

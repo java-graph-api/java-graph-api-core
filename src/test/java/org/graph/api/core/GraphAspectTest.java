@@ -119,7 +119,7 @@ class GraphAspectTest {
         SpyLoggingAspect loggingAspect = new SpyLoggingAspect();
         NodeAspect<AspectState> customAspect = new NodeAspect<>() {
             @Override
-            public int order() {
+            public int getOrder() {
                 return 100;
             }
 
@@ -198,7 +198,7 @@ class GraphAspectTest {
         return new TestNode<>(name, action);
     }
 
-    private record OrderedAspect(String name, int order) implements NodeAspect<AspectState> {
+    private record OrderedAspect(String name, int getOrder) implements NodeAspect<AspectState> {
 
         @Override
             public void around(ProcessingJoinPoint<AspectState> joinPoint) {
