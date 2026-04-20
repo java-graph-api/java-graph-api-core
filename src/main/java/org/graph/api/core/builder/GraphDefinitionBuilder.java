@@ -5,17 +5,18 @@ import org.graph.api.core.GraphState;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.route.RouteConditional;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface GraphDefinitionBuilder<S extends GraphState> {
 
     GraphRouteBuilder<S> from(Node<? super S> node);
 
-    GraphDefinitionBuilder<S> end(Node<? super S> node);
+    void end(Node<? super S> node);
 
-    GraphDefinitionBuilder<S> end(List<Node<? super S>> nodes);
+    void end(Collection<Node<? super S>> nodes);
 
-    GraphExecutor<S> done(); // todo возможно другие имя для метода?
+    GraphExecutor<S> done();
+
 
     interface GraphRouteBuilder<S extends GraphState> {
 

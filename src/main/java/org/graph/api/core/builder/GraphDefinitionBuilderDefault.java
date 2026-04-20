@@ -7,13 +7,14 @@ import org.graph.api.core.aspect.NodeAspect;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.merge.StateMergeStrategy;
 import org.graph.api.core.node.Node;
-import org.graph.api.core.node.factory.NodeFactory;
-import org.graph.api.core.node.factory.NodeMap;
+import org.graph.api.core.node.NodeFactory;
+import org.graph.api.core.node.NodeMap;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
 import org.graph.api.core.route.RouteConditional;
 import org.graph.api.core.route.RouteMap;
 
+import java.util.Collection;
 import java.util.List;
 
 public class GraphDefinitionBuilderDefault<S extends GraphState> implements GraphDefinitionBuilder<S> {
@@ -34,7 +35,7 @@ public class GraphDefinitionBuilderDefault<S extends GraphState> implements Grap
         this.options = options;
         this.nodeFactory = new NodeFactory<>(options, memory);
         this.mergeStrategy = mergeStrategy;
-        this.addBeginNode(beginNode);
+        this.addBeginRoute(beginNode);
     }
 
     @Override
@@ -44,34 +45,32 @@ public class GraphDefinitionBuilderDefault<S extends GraphState> implements Grap
     }
 
     @Override
-    public GraphDefinitionBuilder<S> end(Node<? super S> node) {
-        Route<S> route = endRoteBuild(node);
+    public void end(Node<? super S> node) {
+        Route<S> route = buildEndRoute(node);
         addRoute(route);
-        return this;
     }
 
     @Override
-    public GraphDefinitionBuilder<S> end(List<Node<? super S>> nodes) {
+    public void end(Collection<Node<? super S>> nodes) {
         nodes.stream()
-                .map(this::endRoteBuild)
+                .map(this::buildEndRoute)
                 .forEach(this::addRoute);
-        return this;
     }
 
     @Override
     public GraphExecutor<S> done() {
-        return graphExecutorBuild();
+        return buildGraphExecutor();
     }
 
-    private Route<S> endRoteBuild(Node<? super S> node) {
+    private Route<S> buildEndRoute(Node<? super S> node) {
         return Route.<S>builder()
                 .source(node)
                 .type(Route.Type.END)
                 .build();
     }
 
-    private void addBeginNode(Node<? super S> beginNode) {
-        addNodeToMap(beginNode);
+    private void addBeginRoute(Node<? super S> beginNode) {
+        addNode(beginNode);
         Route<S> route = Route.<S>builder()
                 .target(beginNode)
                 .type(Route.Type.BEGIN)
@@ -83,12 +82,12 @@ public class GraphDefinitionBuilderDefault<S extends GraphState> implements Grap
         routeMap.put(route);
     }
 
-    private GraphExecutor<S> graphExecutorBuild() {
+    private GraphExecutor<S> buildGraphExecutor() {
         NodeRouting<S> nodeRouting = new NodeRouting<>(routeMap, nodeMap);
         return new GraphExecutor<>(nodeRouting, memory, options, mergeStrategy);
     }
 
-    private void addNodeToMap(Node<? super S> node) {
+    private void addNode(Node<? super S> node) {
         if (!nodeMap.containsKey(node)) {
             Node<? super S> proxy = createNodeProxy(node);
             nodeMap.put(proxy);
@@ -112,23 +111,19 @@ public class GraphDefinitionBuilderDefault<S extends GraphState> implements Grap
 
         @Override
         public ConditionalBuilder<S> to(Node<? super S> node) {
-            graphDefinitionBuilder.addNodeToMap(node);
+            graphDefinitionBuilder.addNode(node);
             builder.target(node);
             return new ConditionalBuilderDefault<>(this, builder);
         }
 
         @Override
         public GraphDefinitionBuilder<S> defaultTo(Node<? super S> node) {
-            graphDefinitionBuilder.addNodeToMap(node);
+            graphDefinitionBuilder.addNode(node);
             Route<S> route = builder.target(node)
                     .type(Route.Type.DEFAULT)
                     .build();
-            addRoute(route);
-            return graphDefinitionBuilder;
-        }
-
-        private void addRoute(Route<S> route) {
             graphDefinitionBuilder.addRoute(route);
+            return graphDefinitionBuilder;
         }
     }
 
@@ -148,7 +143,7 @@ public class GraphDefinitionBuilderDefault<S extends GraphState> implements Grap
             Route<S> route = builder.conditional(conditional)
                     .type(Route.Type.CONDITIONAL)
                     .build();
-            graphRouteBuilder.addRoute(route);
+            graphRouteBuilder.graphDefinitionBuilder.addRoute(route);
             return graphRouteBuilder;
         }
     }
