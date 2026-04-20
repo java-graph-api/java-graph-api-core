@@ -10,7 +10,7 @@ public interface RouteSpecification<S extends GraphState> {
 
     RouteSpecification<S> route(Node<? super S> source, Node<? super S> target);
 
-    RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteConditional<? super S> stateConditional);
+    RouteSpecification<S> route(Node<? super S> source, Node<? super S> target, RouteConditional<? super S> conditional);
 
     GraphExecutor<S> end(Node<? super S> target);
 

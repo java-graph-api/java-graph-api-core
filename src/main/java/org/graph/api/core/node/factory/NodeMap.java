@@ -10,6 +10,10 @@ public class NodeMap<S extends GraphState> {
 
     private final Map<String, Node<? super S>> nodeMap = new HashMap<>();
 
+    public void put(Node<? super S> value) {
+        put(value.getName(), value);
+    }
+
     public void put(String key, Node<? super S> value) {
         if (this.containsKey(key)) {
             var thisValue = this.get(key);
@@ -23,6 +27,10 @@ public class NodeMap<S extends GraphState> {
 
     public Node<? super S> get(String key) {
         return nodeMap.get(key);
+    }
+
+    public boolean containsKey(Node<? super S> node) {
+        return nodeMap.containsKey(node.getName());
     }
 
     public boolean containsKey(String key) {

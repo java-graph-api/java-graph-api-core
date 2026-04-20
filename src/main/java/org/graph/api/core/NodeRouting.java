@@ -5,19 +5,19 @@ import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.node.Node;
 import org.graph.api.core.node.factory.NodeMap;
 import org.graph.api.core.route.Route;
+import org.graph.api.core.route.RouteMap;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public final class NodeRouting<S extends GraphState> {
 
-    private final Map<String, List<Route<S>>> routes;
+    private final RouteMap<S> routeMap;
     private final NodeMap<S> nodeMap;
 
-    public NodeRouting(Map<String, List<Route<S>>> routes, NodeMap<S> nodeMap) {
-        this.routes = Collections.unmodifiableMap(routes);
+    public NodeRouting(RouteMap<S> routeMap, NodeMap<S> nodeMap) {
+        this.routeMap = routeMap;
         this.nodeMap = nodeMap;
     }
 
@@ -34,11 +34,11 @@ public final class NodeRouting<S extends GraphState> {
     }
 
     public Node<? super S> getBeginNode() {
-        var routes = this.routes.get(Route.Type.BEGIN.name());
+        var routes = this.routeMap.get(Route.Type.BEGIN.name());
         if (routes == null || routes.size() != 1) {
             throw GraphRoutingException.routeNotFound(Route.Type.BEGIN.name());
         }
-        return routes.get(0).getTarget();
+        return nodeMap.get(routes.get(0).getTarget());
     }
 
     private List<Route<S>> getConditionalRoutes(Node<S> node, S state) {
@@ -48,7 +48,7 @@ public final class NodeRouting<S extends GraphState> {
     }
 
     private List<Route<S>> get(String nodeName) {
-        return Objects.requireNonNullElse(routes.get(nodeName), Collections.emptyList());
+        return Objects.requireNonNullElse(routeMap.get(nodeName), Collections.emptyList());
     }
 
     private Route<S> getRouteOrThrow(Node<S> node, List<Route<S>> conditionalRoutes) {

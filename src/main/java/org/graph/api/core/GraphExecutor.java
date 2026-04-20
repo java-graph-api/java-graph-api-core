@@ -57,7 +57,7 @@ public final class GraphExecutor<S extends GraphState> {
         Route<S> route = nextRoute(beginNode, state);
 
         while (!route.isEnd()) {
-            Node<S> currentNode = (Node<S>) route.getTarget();
+            Node<S> currentNode = (Node<S>) nodeRouting.getNode(route.getTarget());
             nodeExecutor.execute(currentNode, state);
 
             if (state.isGraphInterrupted()) {
