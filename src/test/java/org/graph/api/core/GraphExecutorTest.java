@@ -2,7 +2,7 @@ package org.graph.api.core;
 
 import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
-import org.graph.api.core.exception.TooManyNodeCallException;
+import org.graph.api.core.exception.NodeInvocationLimitExceededException;
 import org.graph.api.core.builder.GraphBuilderDefault;
 import org.graph.api.core.builder.GraphDefinitionBuilder;
 import org.graph.api.core.memory.GraphMemory;
@@ -58,8 +58,7 @@ class GraphExecutorTest {
 
         GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("complex-routing"))
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(decide);
@@ -95,28 +94,27 @@ class GraphExecutorTest {
     }
 
     @Test
-    void shouldThrowTooManyNodeCallExceptionForInfiniteLoop() {
+    void shouldThrowNodeInvocationLimitExceededExceptionForInfiniteLoop() {
         Node<LoopState> loop = node("loop", s -> s.hits += 1, 3);
+        Node<LoopState> pingPong = node("pingPong", s -> s.hits += 10);
         Node<LoopState> finish = node("finish", s -> s.hits += 1000);
 
-        GraphDefinitionBuilder<LoopState> graph = new GraphBuilderDefault<LoopState>()
+        var graph = new GraphBuilderDefault<LoopState>()
                 .options(options("loop-guard"))
                 .begin(loop)
-                ;
+                .from(loop).defaultTo(pingPong);
 
-        graph.from(loop)
-                .to(loop).when(s -> true);
+        graph.from(pingPong).defaultTo(loop);
 
         graph.end(finish);
-
         GraphExecutor<LoopState> executor = graph.done();
 
-        TooManyNodeCallException exception = assertThrows(
-                TooManyNodeCallException.class,
+        NodeInvocationLimitExceededException exception = assertThrows(
+                NodeInvocationLimitExceededException.class,
                 () -> executor.execute(new LoopState(), "loop-session")
         );
 
-        assertTrue(exception.getMessage().contains("Too many node call"));
+        assertTrue(exception.getMessage().contains("Node invocation limit exceeded"));
         assertTrue(exception.getMessage().contains("loop"));
     }
 
@@ -145,8 +143,7 @@ class GraphExecutorTest {
         GraphDefinitionBuilder<ResumeState> graph = new GraphBuilderDefault<ResumeState>()
                 .options(options("not-found"))
                 .memory(memory)
-                .begin(known)
-                ;
+                .begin(known);
 
         graph.end(known);
 
@@ -167,8 +164,7 @@ class GraphExecutorTest {
 
         GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("missing-route"))
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.end(detachedEnd);
 
@@ -190,8 +186,7 @@ class GraphExecutorTest {
 
         GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("multiple-routes"))
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .to(left).when(s -> s.value > 0)
@@ -229,8 +224,7 @@ class GraphExecutorTest {
         GraphDefinitionBuilder<ResumableState> graph = new GraphBuilderDefault<ResumableState>()
                 .options(options("resume-execution-id"))
                 .memory(memory)
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(end);
@@ -266,8 +260,7 @@ class GraphExecutorTest {
                 .options(options("merge-use-saved"))
                 .memory(memory)
                 .mergeStrategy(new UseSavedStateStrategy<>())
-                .begin(start)
-                ;
+                .begin(start);
 
         graph = graph.from(start)
                 .defaultTo(end);
@@ -327,8 +320,7 @@ class GraphExecutorTest {
                 .options(options("merge-custom"))
                 .memory(memory)
                 .mergeStrategy(custom)
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(end);
@@ -360,8 +352,7 @@ class GraphExecutorTest {
                 .options(options("merge-wiring"))
                 .memory(memory)
                 .mergeStrategy(strategy)
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(end);
@@ -408,7 +399,7 @@ class GraphExecutorTest {
     private static GraphOptions options(String name) {
         return GraphOptions.builder()
                 .graphName(name)
-                .nodeCallLimit(100)
+                .nodeInvocationLimit(100)
                 .build();
     }
 
@@ -417,21 +408,21 @@ class GraphExecutorTest {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static <S extends GraphState> Node<S> node(String name, Consumer<S> action, int callLimit) {
-        return new TestNode<>(name, action, callLimit);
+    private static <S extends GraphState> Node<S> node(String name, Consumer<S> action, int invocationLimit) {
+        return new TestNode<>(name, action, invocationLimit);
     }
 
     private static final class TestNode<S extends GraphState> implements Node<S> {
 
         private final String name;
         private final Consumer<S> action;
-        private final int callLimit;
+        private final int invocationLimit;
         private final UUID id = UUID.randomUUID();
 
-        private TestNode(String name, Consumer<S> action, int callLimit) {
+        private TestNode(String name, Consumer<S> action, int invocationLimit) {
             this.name = name;
             this.action = action;
-            this.callLimit = callLimit;
+            this.invocationLimit = invocationLimit;
         }
 
         @Override
@@ -450,8 +441,8 @@ class GraphExecutorTest {
         }
 
         @Override
-        public int callLimit() {
-            return callLimit;
+        public int invocationLimit() {
+            return invocationLimit;
         }
     }
 

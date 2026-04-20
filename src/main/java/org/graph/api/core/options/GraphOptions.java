@@ -12,6 +12,6 @@ public class GraphOptions {
     private String graphName;
 
     @Builder.Default
-    private int nodeCallLimit = 100;
+    private int nodeInvocationLimit = 100;
 
 }

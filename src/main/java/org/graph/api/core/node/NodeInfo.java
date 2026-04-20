@@ -1,4 +1,4 @@
 package org.graph.api.core.node;
 
-public record NodeInfo(String name, int callLimit) {
+public record NodeInfo(String name, int invocationLimit) {
 }

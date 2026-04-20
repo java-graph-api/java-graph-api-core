@@ -1,10 +1,10 @@
 package org.graph.api.core;
 
-import org.graph.api.core.node.guard.NodeCallState;
+import org.graph.api.core.node.guard.NodeInvocationState;
 
 import java.util.UUID;
 
-public abstract class GraphState extends NodeCallState {
+public abstract class GraphState extends NodeInvocationState {
 
     private transient ExecutorStatus executorStatus;
     private String sessionId;

@@ -92,7 +92,7 @@ public final class NodeProxyFactory<S extends GraphState> {
             Consumer<S> next = chain;
 
             chain = (state) -> {
-                NodeInfo nodeInfo = new NodeInfo(target.getName(), target.callLimit());
+                NodeInfo nodeInfo = new NodeInfo(target.getName(), target.invocationLimit());
                 //noinspection unchecked
                 T aspectState = (T) state;
                 ProcessingJoinPoint<T> joinPoint = new ProcessingJoinPoint<>(aspectState, options, nodeInfo, () -> next.accept(state));

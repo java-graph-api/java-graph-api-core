@@ -5,7 +5,7 @@ import org.graph.api.core.memory.SavePointState;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class NodeCallState extends SavePointState {
+public abstract class NodeInvocationState extends SavePointState {
 
     private transient final Map<String, Integer> counter = new ConcurrentHashMap<>();
 
