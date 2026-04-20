@@ -12,7 +12,7 @@ public interface Node<S extends GraphState> {
 
     UUID getId();
 
-    default int callLimit() {
+    default int invocationLimit() {
         return 0;
     }
 }

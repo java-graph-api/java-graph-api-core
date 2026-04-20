@@ -203,7 +203,7 @@ class SubgraphTest {
     private static GraphOptions options(String name) {
         return GraphOptions.builder()
                 .graphName(name)
-                .nodeCallLimit(100)
+                .nodeInvocationLimit(100)
                 .build();
     }
 

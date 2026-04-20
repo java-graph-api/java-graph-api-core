@@ -139,7 +139,7 @@ class GraphMemoryTest {
     }
 
     private static GraphOptions options(String name) {
-        return GraphOptions.builder().graphName(name).nodeCallLimit(100).build();
+        return GraphOptions.builder().graphName(name).nodeInvocationLimit(100).build();
     }
 
     private static <S extends GraphState> Node<S> node(String name, Consumer<S> action) {

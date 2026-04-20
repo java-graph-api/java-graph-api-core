@@ -2,7 +2,7 @@ package org.graph.api.core;
 
 import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
-import org.graph.api.core.exception.TooManyNodeCallException;
+import org.graph.api.core.exception.NodeInvocationLimitExceededException;
 import org.graph.api.core.memory.GraphMemory;
 import org.graph.api.core.memory.InMemoryGraphMemory;
 import org.graph.api.core.memory.SavePoint;
@@ -79,7 +79,7 @@ class GraphExecutorTest {
     }
 
     @Test
-    void shouldThrowTooManyNodeCallExceptionForInfiniteLoop() {
+    void shouldThrowNodeInvocationLimitExceededExceptionForInfiniteLoop() {
         Node<LoopState> loop = node("loop", s -> s.hits += 1, 3);
         Node<LoopState> finish = node("finish", s -> s.hits += 1000);
 
@@ -89,12 +89,12 @@ class GraphExecutorTest {
                 .route(loop, loop, s -> true)
                 .end(finish);
 
-        TooManyNodeCallException exception = assertThrows(
-                TooManyNodeCallException.class,
+        NodeInvocationLimitExceededException exception = assertThrows(
+                NodeInvocationLimitExceededException.class,
                 () -> executor.execute(new LoopState(), "loop-session")
         );
 
-        assertTrue(exception.getMessage().contains("Too many node call"));
+        assertTrue(exception.getMessage().contains("Node invocation limit exceeded"));
         assertTrue(exception.getMessage().contains("loop"));
     }
 
@@ -344,7 +344,7 @@ class GraphExecutorTest {
     private static GraphOptions options(String name) {
         return GraphOptions.builder()
                 .graphName(name)
-                .nodeCallLimit(100)
+                .nodeInvocationLimit(100)
                 .build();
     }
 
@@ -353,21 +353,21 @@ class GraphExecutorTest {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static <S extends GraphState> Node<S> node(String name, Consumer<S> action, int callLimit) {
-        return new TestNode<>(name, action, callLimit);
+    private static <S extends GraphState> Node<S> node(String name, Consumer<S> action, int invocationLimit) {
+        return new TestNode<>(name, action, invocationLimit);
     }
 
     private static final class TestNode<S extends GraphState> implements Node<S> {
 
         private final String name;
         private final Consumer<S> action;
-        private final int callLimit;
+        private final int invocationLimit;
         private final UUID id = UUID.randomUUID();
 
-        private TestNode(String name, Consumer<S> action, int callLimit) {
+        private TestNode(String name, Consumer<S> action, int invocationLimit) {
             this.name = name;
             this.action = action;
-            this.callLimit = callLimit;
+            this.invocationLimit = invocationLimit;
         }
 
         @Override
@@ -386,8 +386,8 @@ class GraphExecutorTest {
         }
 
         @Override
-        public int callLimit() {
-            return callLimit;
+        public int invocationLimit() {
+            return invocationLimit;
         }
     }
 
