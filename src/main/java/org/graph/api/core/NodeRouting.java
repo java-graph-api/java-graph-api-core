@@ -3,7 +3,7 @@ package org.graph.api.core;
 import org.graph.api.core.exception.GraphNodeNotFoundException;
 import org.graph.api.core.exception.GraphRoutingException;
 import org.graph.api.core.node.Node;
-import org.graph.api.core.node.factory.NodeMap;
+import org.graph.api.core.node.NodeMap;
 import org.graph.api.core.route.Route;
 import org.graph.api.core.route.RouteMap;
 

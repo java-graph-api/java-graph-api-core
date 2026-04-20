@@ -1,7 +1,6 @@
-package org.graph.api.core.node.factory;
+package org.graph.api.core.node;
 
 import org.graph.api.core.GraphState;
-import org.graph.api.core.node.Node;
 
 import java.util.HashMap;
 import java.util.Map;

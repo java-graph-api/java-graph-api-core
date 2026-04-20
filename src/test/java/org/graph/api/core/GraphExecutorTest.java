@@ -271,7 +271,7 @@ class GraphExecutorTest {
                 .begin(start)
                 ;
 
-        graph.from(start)
+        graph = graph.from(start)
                 .defaultTo(end);
 
         graph.end(end);
@@ -295,8 +295,7 @@ class GraphExecutorTest {
                 .options(options("merge-use-incoming"))
                 .memory(memory)
                 .mergeStrategy(new UseIncomingStateStrategy<>())
-                .begin(start)
-                ;
+                .begin(start);
 
         graph.from(start)
                 .defaultTo(end);
@@ -379,6 +378,7 @@ class GraphExecutorTest {
     }
 
 
+    @SuppressWarnings("SameParameterValue")
     private static GraphMemory memoryWithSavepoint(String graphName, String nodeName, GraphState state) {
         return new GraphMemory() {
             @Override
