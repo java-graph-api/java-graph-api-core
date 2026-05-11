@@ -27,7 +27,9 @@ public class SavePointAspect implements NodeAspect<GraphState> {
             ensureGraphMemory();
             String nodeName = state.getSaveNodeName() == null ? joinPoint.getCurrentNodeName() : state.getSaveNodeName();
             var graphName = joinPoint.getOptions().getGraphName();
-            graphMemory.put(graphName, nodeName, joinPoint.getState(), joinPoint.getState().getSessionId());
+            var graphState = (GraphState) state;
+            var executionId = graphState.getExecutionId().toString();
+            graphMemory.put(graphName, nodeName, graphState, graphState.getSessionId(), executionId);
         }
     }
 

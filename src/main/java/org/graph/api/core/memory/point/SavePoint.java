@@ -7,6 +7,7 @@ public record SavePoint(
         String graphName,
         String nodeName,
         String sessionId,
+        String executionId,
         Object state,
         Class<?> stateClass
 ) {

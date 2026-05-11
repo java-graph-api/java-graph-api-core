@@ -10,11 +10,12 @@ public interface GraphMemory {
 
     Optional<SavePoint> get(String graphName, String sessionId);
 
-    default void put(String graphName, String nodeName, Object state, String sessionId) {
+    default void put(String graphName, String nodeName, Object state, String sessionId, String executionId) {
         var savePoint = SavePoint.builder()
                 .graphName(graphName)
                 .nodeName(nodeName)
                 .sessionId(sessionId)
+                .executionId(executionId)
                 .state(state)
                 .stateClass(state.getClass())
                 .build();
