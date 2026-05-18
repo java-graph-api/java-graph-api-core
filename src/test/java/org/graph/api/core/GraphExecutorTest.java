@@ -17,6 +17,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.Optional;
@@ -120,7 +125,7 @@ class GraphExecutorTest {
 
     @Test
     void shouldThrowGraphNodeNotFoundExceptionWhenSavePointReferencesUnknownNode() {
-        Node<ResumeState> known = node("known", s -> s.value += 1);
+        Node<ResumableState> known = node("known", s -> s.value += 1);
 
         GraphMemory memory = new GraphMemory() {
             @Override
@@ -134,24 +139,24 @@ class GraphExecutorTest {
                                 .graphName(graphName)
                                 .sessionId(sessionId)
                                 .nodeName("missing-node")
-                                .state(new ResumeState())
+                                .state(new ResumableState())
                                 .build()
                 );
             }
         };
 
-        GraphDefinitionBuilder<ResumeState> graph = new GraphBuilderDefault<ResumeState>()
+        GraphDefinitionBuilder<ResumableState> graph = new GraphBuilderDefault<ResumableState>()
                 .options(options("not-found"))
                 .memory(memory)
                 .begin(known);
 
         graph.end(known);
 
-        GraphExecutor<ResumeState> executor = graph.done();
+        GraphExecutor<ResumableState> executor = graph.done();
 
         GraphNodeNotFoundException exception = assertThrows(
                 GraphNodeNotFoundException.class,
-                () -> executor.execute(new ResumeState(), "missing-session")
+                () -> executor.execute(new ResumableState(), "missing-session")
         );
 
         assertTrue(exception.getMessage().contains("missing-node"));
@@ -240,7 +245,10 @@ class GraphExecutorTest {
         assertEquals("resume-session", firstRunState.getSessionId());
         assertEquals(1, firstRunState.getStep());
 
-        ResumableState resumedState = executor.execute(new ResumableState(), "resume-session");
+        ResumableState resumedIncomingState = new ResumableState();
+        resumedIncomingState.setStep(firstRunState.getStep());
+
+        ResumableState resumedState = executor.execute(resumedIncomingState, "resume-session");
 
         assertEquals(ExecutorStatus.COMPLETED, resumedState.getExecutorStatus());
         assertEquals("resume-session", resumedState.getSessionId());
@@ -366,6 +374,69 @@ class GraphExecutorTest {
         assertEquals(1, mergeCalls.get());
     }
 
+    @Test
+    void shouldSerializeExecutionForSameSessionIdAcrossFourThreads() throws Exception {
+        AtomicInteger inFlight = new AtomicInteger(0);
+        AtomicInteger maxInFlight = new AtomicInteger(0);
+        List<Integer> entryOrder = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger sequence = new AtomicInteger(0);
+
+        Node<WorkflowState> start = node("start", s -> {
+            int current = inFlight.incrementAndGet();
+            maxInFlight.updateAndGet(existing -> Math.max(existing, current));
+            entryOrder.add(sequence.incrementAndGet());
+
+            try {
+                Thread.sleep(75);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            } finally {
+                inFlight.decrementAndGet();
+            }
+        });
+
+        GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
+                .options(options("same-session-concurrency"))
+                .begin(start);
+
+        graph.end(start);
+
+        GraphExecutor<WorkflowState> executor = graph.done();
+
+        int threads = 4;
+        CountDownLatch ready = new CountDownLatch(threads);
+        CountDownLatch go = new CountDownLatch(1);
+
+        var pool = Executors.newFixedThreadPool(threads);
+        try {
+            List<Future<WorkflowState>> futures = new ArrayList<>();
+            for (int i = 0; i < threads; i++) {
+                futures.add(pool.submit(() -> {
+                    ready.countDown();
+                    if (!go.await(2, TimeUnit.SECONDS)) {
+                        throw new AssertionError("Start signal timeout");
+                    }
+                    return executor.execute(new WorkflowState(), "shared-session");
+                }));
+            }
+
+            assertTrue(ready.await(2, TimeUnit.SECONDS));
+            go.countDown();
+
+            for (Future<WorkflowState> future : futures) {
+                WorkflowState state = future.get(5, TimeUnit.SECONDS);
+                assertEquals("shared-session", state.getSessionId());
+                assertEquals(ExecutorStatus.COMPLETED, state.getExecutorStatus());
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+
+        assertEquals(4, entryOrder.size());
+        assertEquals(1, maxInFlight.get());
+    }
+
 
     @SuppressWarnings("SameParameterValue")
     private static GraphMemory memoryWithSavepoint(String graphName, String nodeName, GraphState state) {
@@ -406,7 +477,6 @@ class GraphExecutorTest {
     private static <S extends GraphState> Node<S> node(String name, Consumer<S> action) {
         return new TestNode<>(name, action, 0);
     }
-
     @SuppressWarnings("SameParameterValue")
     private static <S extends GraphState> Node<S> node(String name, Consumer<S> action, int invocationLimit) {
         return new TestNode<>(name, action, invocationLimit);
@@ -452,8 +522,17 @@ class GraphExecutorTest {
         private final List<String> visits = new ArrayList<>();
     }
 
-    private static final class ResumeState extends GraphState implements Serializable {
+    private static final class ResumableState extends GraphState implements Serializable {
         private int value;
+        private int step;
+
+        private int getStep() {
+            return step;
+        }
+
+        private void setStep(int step) {
+            this.step = step;
+        }
     }
 
     private static final class LoopState extends GraphState implements Serializable {
