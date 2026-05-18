@@ -393,11 +393,13 @@ class GraphExecutorTest {
             }
         });
 
-        GraphExecutor<WorkflowState> executor = new GraphBuilderDefault<WorkflowState>()
+        GraphDefinitionBuilder<WorkflowState> graph = new GraphBuilderDefault<WorkflowState>()
                 .options(options("same-session-concurrency"))
-                .begin(start)
-                .end(start)
-                .done();
+                .begin(start);
+
+        graph.end(start);
+
+        GraphExecutor<WorkflowState> executor = graph.done();
 
         int threads = 4;
         CountDownLatch ready = new CountDownLatch(threads);
@@ -472,68 +474,6 @@ class GraphExecutorTest {
     private static <S extends GraphState> Node<S> node(String name, Consumer<S> action) {
         return new TestNode<>(name, action, 0);
     }
-    @Test
-    void shouldSerializeExecutionForSameSessionIdAcrossFourThreads() throws Exception {
-        AtomicInteger inFlight = new AtomicInteger(0);
-        AtomicInteger maxInFlight = new AtomicInteger(0);
-        List<Integer> entryOrder = Collections.synchronizedList(new ArrayList<>());
-        AtomicInteger sequence = new AtomicInteger(0);
-
-        Node<WorkflowState> start = node("start", s -> {
-            int current = inFlight.incrementAndGet();
-            maxInFlight.updateAndGet(existing -> Math.max(existing, current));
-            entryOrder.add(sequence.incrementAndGet());
-
-            try {
-                Thread.sleep(75);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
-            } finally {
-                inFlight.decrementAndGet();
-            }
-        });
-
-        GraphExecutor<WorkflowState> executor = new GraphBuilderDefault<WorkflowState>()
-                .options(options("same-session-concurrency"))
-                .begin(start)
-                .end(start)
-                .done();
-
-        int threads = 4;
-        CountDownLatch ready = new CountDownLatch(threads);
-        CountDownLatch go = new CountDownLatch(1);
-
-        var pool = Executors.newFixedThreadPool(threads);
-        try {
-            List<Future<WorkflowState>> futures = new ArrayList<>();
-            for (int i = 0; i < threads; i++) {
-                futures.add(pool.submit(() -> {
-                    ready.countDown();
-                    if (!go.await(2, TimeUnit.SECONDS)) {
-                        throw new AssertionError("Start signal timeout");
-                    }
-                    return executor.execute(new WorkflowState(), "shared-session");
-                }));
-            }
-
-            assertTrue(ready.await(2, TimeUnit.SECONDS));
-            go.countDown();
-
-            for (Future<WorkflowState> future : futures) {
-                WorkflowState state = future.get(5, TimeUnit.SECONDS);
-                assertEquals("shared-session", state.getSessionId());
-                assertEquals(ExecutorStatus.COMPLETED, state.getExecutorStatus());
-            }
-        } finally {
-            pool.shutdownNow();
-        }
-
-        assertEquals(4, entryOrder.size());
-        assertEquals(1, maxInFlight.get());
-    }
-
-
     @SuppressWarnings("SameParameterValue")
     private static <S extends GraphState> Node<S> node(String name, Consumer<S> action, int invocationLimit) {
         return new TestNode<>(name, action, invocationLimit);
@@ -579,8 +519,17 @@ class GraphExecutorTest {
         private final List<String> visits = new ArrayList<>();
     }
 
-    private static final class ResumeState extends GraphState implements Serializable {
+    private static final class ResumableState extends GraphState implements Serializable {
         private int value;
+        private int step;
+
+        private int getStep() {
+            return step;
+        }
+
+        private void setStep(int step) {
+            this.step = step;
+        }
     }
 
     private static final class LoopState extends GraphState implements Serializable {
