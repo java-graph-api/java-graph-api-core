@@ -125,7 +125,7 @@ class GraphExecutorTest {
 
     @Test
     void shouldThrowGraphNodeNotFoundExceptionWhenSavePointReferencesUnknownNode() {
-        Node<ResumeState> known = node("known", s -> s.value += 1);
+        Node<ResumableState> known = node("known", s -> s.value += 1);
 
         GraphMemory memory = new GraphMemory() {
             @Override
@@ -139,24 +139,24 @@ class GraphExecutorTest {
                                 .graphName(graphName)
                                 .sessionId(sessionId)
                                 .nodeName("missing-node")
-                                .state(new ResumeState())
+                                .state(new ResumableState())
                                 .build()
                 );
             }
         };
 
-        GraphDefinitionBuilder<ResumeState> graph = new GraphBuilderDefault<ResumeState>()
+        GraphDefinitionBuilder<ResumableState> graph = new GraphBuilderDefault<ResumableState>()
                 .options(options("not-found"))
                 .memory(memory)
                 .begin(known);
 
         graph.end(known);
 
-        GraphExecutor<ResumeState> executor = graph.done();
+        GraphExecutor<ResumableState> executor = graph.done();
 
         GraphNodeNotFoundException exception = assertThrows(
                 GraphNodeNotFoundException.class,
-                () -> executor.execute(new ResumeState(), "missing-session")
+                () -> executor.execute(new ResumableState(), "missing-session")
         );
 
         assertTrue(exception.getMessage().contains("missing-node"));
