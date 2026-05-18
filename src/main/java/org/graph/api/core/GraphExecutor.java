@@ -9,8 +9,11 @@ import org.graph.api.core.node.NodeExecutor;
 import org.graph.api.core.options.GraphOptions;
 import org.graph.api.core.route.Route;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 @SuppressWarnings("unchecked")
 public final class GraphExecutor<S extends GraphState> {
@@ -20,6 +23,7 @@ public final class GraphExecutor<S extends GraphState> {
     private final NodeRouting<S> nodeRouting;
     private final StateMergeStrategy<S> mergeStrategy;
     private final NodeExecutor<S> nodeExecutor = new NodeExecutor<>();
+    private final Map<String, Semaphore> semaphores = new ConcurrentHashMap<>();
 
     public GraphExecutor(NodeRouting<S> nodeRouting, GraphMemory memory, GraphOptions options, StateMergeStrategy<S> mergeStrategy) {
         this.memory = memory;
@@ -34,8 +38,19 @@ public final class GraphExecutor<S extends GraphState> {
 
     public S execute(S state, String sessionId) {
         Objects.requireNonNull(sessionId, "sessionId cannot be null");
-        state.init(sessionId);
-        return internalExecute(state);
+        Semaphore semaphore = semaphores.computeIfAbsent(sessionId, id -> new Semaphore(1, true));
+
+        semaphore.acquireUninterruptibly();
+        try {
+            state.init(sessionId);
+            return internalExecute(state);
+        } finally {
+            semaphore.release();
+
+            if (semaphore.availablePermits() == 1 && !semaphore.hasQueuedThreads()) {
+                semaphores.remove(sessionId, semaphore);
+            }
+        }
     }
 
     private S internalExecute(S state) {
