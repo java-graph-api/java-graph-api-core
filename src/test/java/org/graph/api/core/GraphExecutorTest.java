@@ -245,7 +245,10 @@ class GraphExecutorTest {
         assertEquals("resume-session", firstRunState.getSessionId());
         assertEquals(1, firstRunState.getStep());
 
-        ResumableState resumedState = executor.execute(firstRunState, "resume-session");
+        ResumableState resumedIncomingState = new ResumableState();
+        resumedIncomingState.setStep(firstRunState.getStep());
+
+        ResumableState resumedState = executor.execute(resumedIncomingState, "resume-session");
 
         assertEquals(ExecutorStatus.COMPLETED, resumedState.getExecutorStatus());
         assertEquals("resume-session", resumedState.getSessionId());
