@@ -403,7 +403,8 @@ class GraphExecutorTest {
         CountDownLatch ready = new CountDownLatch(threads);
         CountDownLatch go = new CountDownLatch(1);
 
-        try (var pool = Executors.newFixedThreadPool(threads)) {
+        var pool = Executors.newFixedThreadPool(threads);
+        try {
             List<Future<WorkflowState>> futures = new ArrayList<>();
             for (int i = 0; i < threads; i++) {
                 futures.add(pool.submit(() -> {
@@ -423,6 +424,8 @@ class GraphExecutorTest {
                 assertEquals("shared-session", state.getSessionId());
                 assertEquals(ExecutorStatus.COMPLETED, state.getExecutorStatus());
             }
+        } finally {
+            pool.shutdownNow();
         }
 
         assertEquals(4, entryOrder.size());
@@ -501,7 +504,8 @@ class GraphExecutorTest {
         CountDownLatch ready = new CountDownLatch(threads);
         CountDownLatch go = new CountDownLatch(1);
 
-        try (var pool = Executors.newFixedThreadPool(threads)) {
+        var pool = Executors.newFixedThreadPool(threads);
+        try {
             List<Future<WorkflowState>> futures = new ArrayList<>();
             for (int i = 0; i < threads; i++) {
                 futures.add(pool.submit(() -> {
@@ -521,6 +525,8 @@ class GraphExecutorTest {
                 assertEquals("shared-session", state.getSessionId());
                 assertEquals(ExecutorStatus.COMPLETED, state.getExecutorStatus());
             }
+        } finally {
+            pool.shutdownNow();
         }
 
         assertEquals(4, entryOrder.size());
