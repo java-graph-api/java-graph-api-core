@@ -2,7 +2,7 @@ package org.graph.api.core.memory.merge;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.graph.api.core.memory.ClassMetadata;
+import org.graph.api.core.memory.StateMetadata;
 import org.graph.api.core.memory.annotation.SavePointExclude;
 import org.graph.api.core.memory.annotation.SavePointInclude;
 import org.junit.jupiter.api.Test;
@@ -81,7 +81,7 @@ class GraphStateMergerTest {
 
     @Test
     void shouldResolveIncludeKeysAndDefaultsFromField() {
-        ClassMetadata metadata = AnnotationResolver.resolveClassMetadata(IncludeFieldState.class);
+        StateMetadata metadata = AnnotationResolver.resolveClassMetadata(IncludeFieldState.class);
         PropertyMetadata property = metadata.properties().get("name");
 
         assertTrue(property.writeGetterIncluded());
@@ -95,7 +95,7 @@ class GraphStateMergerTest {
 
     @Test
     void shouldUsePropertyNameAsDefaultKeyWhenIncludeKeyIsEmpty() {
-        ClassMetadata metadata = AnnotationResolver.resolveClassMetadata(DefaultKeyIncludeState.class);
+        StateMetadata metadata = AnnotationResolver.resolveClassMetadata(DefaultKeyIncludeState.class);
         PropertyMetadata property = metadata.properties().get("name");
 
         assertEquals("name", property.writeKey());
@@ -104,7 +104,7 @@ class GraphStateMergerTest {
 
     @Test
     void shouldUseMethodKeyOverFieldKey() {
-        ClassMetadata metadata = AnnotationResolver.resolveClassMetadata(MethodKeyPriorityState.class);
+        StateMetadata metadata = AnnotationResolver.resolveClassMetadata(MethodKeyPriorityState.class);
         PropertyMetadata property = metadata.properties().get("value");
 
         assertEquals("getter_key", property.writeKey());

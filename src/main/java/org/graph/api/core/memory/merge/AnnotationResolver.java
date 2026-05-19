@@ -1,6 +1,6 @@
 package org.graph.api.core.memory.merge;
 
-import org.graph.api.core.memory.ClassMetadata;
+import org.graph.api.core.memory.StateMetadata;
 import org.graph.api.core.memory.annotation.SavePointExclude;
 import org.graph.api.core.memory.annotation.SavePointInclude;
 
@@ -18,7 +18,7 @@ final class AnnotationResolver {
     private AnnotationResolver() {
     }
 
-    static ClassMetadata resolveClassMetadata(Class<?> clazz) {
+    static StateMetadata resolveClassMetadata(Class<?> clazz) {
         Map<String, MutablePropertyMeta> mutable = new LinkedHashMap<>();
 
         for (Method method : clazz.getMethods()) {
@@ -45,7 +45,7 @@ final class AnnotationResolver {
         validateUniqueKeys(clazz, properties, true);
         validateUniqueKeys(clazz, properties, false);
 
-        return new ClassMetadata(properties);
+        return new StateMetadata(properties);
     }
 
     private static void validateUniqueKeys(Class<?> clazz, Map<String, PropertyMetadata> properties, boolean writeOperation) {

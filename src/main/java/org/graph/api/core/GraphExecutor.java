@@ -56,27 +56,23 @@ public final class GraphExecutor<S extends GraphState> {
     private S internalExecute(S state) {
         StartPoint<S> startPoint = loadStartNodeAndState(state);
 
-        Node<S> beginNode = startPoint.node();
+        Node<S> node = startPoint.node();
         state = startPoint.state();
+        Route<S> route;
 
-        nodeExecutor.execute(beginNode, state);
-
-        if (state.isGraphInterrupted()) {
-            return state;
-        }
-
-        Route<S> route = nextRoute(beginNode, state);
-
-        while (!route.isEnd()) {
-            Node<S> currentNode = (Node<S>) nodeRouting.getNode(route.getTarget());
-            nodeExecutor.execute(currentNode, state);
+        do {
+            nodeExecutor.execute(node, state);
 
             if (state.isGraphInterrupted()) {
                 return state;
             }
 
-            route = nextRoute(currentNode, state);
-        }
+            route = nextRoute(node, state);
+
+            if (!route.isEnd()) {
+                node = (Node<S>) nodeRouting.getNode(route.getTarget());
+            }
+        } while (!route.isEnd());
 
         return complete(state);
     }
@@ -86,18 +82,16 @@ public final class GraphExecutor<S extends GraphState> {
                 .map(sp -> StartPoint.<S>builder()
                         .node((Node<S>) nodeRouting.getNode(sp.nodeName()))
                         .state(mergeStrategy.merge((S) sp.state(), state))
-                        .build()
-                ).orElseGet(() -> StartPoint.<S>builder()
+                        .build())
+                .orElseGet(() -> StartPoint.<S>builder()
                         .node((Node<S>) nodeRouting.getBeginNode())
                         .state(state)
                         .build());
     }
 
     private Optional<SavePoint> getSavePoint(S state) {
-        if (memory == null) {
-            return Optional.empty();
-        }
-        return memory.get(options.getGraphName(), state.getSessionId());
+        return Optional.ofNullable(memory)
+                .flatMap(memory -> memory.get(options.getGraphName(), state.getSessionId()));
     }
 
     private Route<S> nextRoute(Node<S> node, S state) {
