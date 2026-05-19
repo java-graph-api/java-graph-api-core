@@ -1,6 +1,6 @@
 package org.graph.api.core.memory.merge;
 
-import org.graph.api.core.memory.ClassMetadata;
+import org.graph.api.core.memory.StateMetadata;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -8,12 +8,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GraphStateMerger {
 
-    private static final Map<Class<?>, ClassMetadata> cache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, StateMetadata> cache = new ConcurrentHashMap<>();
 
     public static Object merge(Object source, Object target) {
-        ClassMetadata classMetadata = getClassMetadata(source, target);
+        StateMetadata stateMetadata = getClassMetadata(source, target);
 
-        classMetadata.properties().values().stream()
+        stateMetadata.properties().values().stream()
                 .filter(PropertyMetadata::isMergeEligible)
                 .forEach(propertyMetadata -> mergeProperty(source, target, propertyMetadata));
 
@@ -29,7 +29,7 @@ public class GraphStateMerger {
         }
     }
 
-    private static ClassMetadata getClassMetadata(Object source, Object target) {
+    private static StateMetadata getClassMetadata(Object source, Object target) {
         if (source == null || target == null) {
             throw new IllegalArgumentException("Source and target must not be null");
         }
