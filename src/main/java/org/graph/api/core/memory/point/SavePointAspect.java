@@ -1,8 +1,8 @@
 package org.graph.api.core.memory.point;
 
 import org.graph.api.core.GraphState;
-import org.graph.api.core.aspect.JoinPoint;
 import org.graph.api.core.aspect.NodeAspect;
+import org.graph.api.core.aspect.ProcessingJoinPoint;
 import org.graph.api.core.memory.GraphMemory;
 
 import java.util.Objects;
@@ -16,20 +16,22 @@ public class SavePointAspect implements NodeAspect<GraphState> {
     }
 
     @Override
-    public void before(JoinPoint<GraphState> joinPoint) {
-        ((SavePointState) joinPoint.getState()).saveClear();
-    }
-
-    @Override
-    public void after(JoinPoint<GraphState> joinPoint) {
-        var state = (SavePointState) joinPoint.getState();
-        if (state.isSave()) {
-            ensureGraphMemory();
-            String nodeName = state.getSaveNodeName() == null ? joinPoint.getCurrentNodeName() : state.getSaveNodeName();
-            var graphName = joinPoint.getOptions().getGraphName();
-            var graphState = (GraphState) state;
-            var executionId = graphState.getExecutionId().toString();
-            graphMemory.put(graphName, nodeName, graphState, graphState.getSessionId(), executionId);
+    public void around(ProcessingJoinPoint<GraphState> processingJoinPoint) {
+        try {
+            ((SavePointState) processingJoinPoint.getState()).saveClear();
+            NodeAspect.super.around(processingJoinPoint);
+        } finally {
+            var state = (SavePointState) processingJoinPoint.getState();
+            if (state.isSave()) {
+                ensureGraphMemory();
+                String nodeName = state.getSaveNodeName() == null
+                        ? processingJoinPoint.getCurrentNodeName()
+                        : state.getSaveNodeName();
+                var graphName = processingJoinPoint.getOptions().getGraphName();
+                var graphState = (GraphState) state;
+                var executionId = graphState.getExecutionId().toString();
+                graphMemory.put(graphName, nodeName, graphState, graphState.getSessionId(), executionId);
+            }
         }
     }
 

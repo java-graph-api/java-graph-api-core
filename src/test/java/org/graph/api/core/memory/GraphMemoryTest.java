@@ -54,15 +54,6 @@ class GraphMemoryTest {
 
         GraphExecutor<TestMemoryState> executor = graph.done();
 
-
-//        GraphExecutor<TestMemoryState> executor = new GraphSpecification<TestMemoryState>()
-//                .options(options("memory-resume"))
-//                .memory(memory)
-//                .begin(start)
-//                .route(start, checkpoint)
-//                .route(checkpoint, finish)
-//                .end(finish);
-
         TestMemoryState first = new TestMemoryState();
         TestMemoryState interrupted = executor.execute(first, "session-a");
 
@@ -110,14 +101,6 @@ class GraphMemoryTest {
 
         GraphExecutor<TestMemoryState> executor = graph.done();
 
-//        GraphExecutor<TestMemoryState> executor = new GraphSpecification<TestMemoryState>()
-//                .options(options("memory-save-check"))
-//                .memory(memory)
-//                .begin(start)
-//                .route(start, saveHere)
-//                .route(saveHere, finish)
-//                .end(finish);
-
         TestMemoryState result = executor.execute(new TestMemoryState(), "session-save");
 
         assertEquals(ExecutorStatus.INTERRUPT, result.getExecutorStatus());
@@ -129,6 +112,51 @@ class GraphMemoryTest {
         TestMemoryState savedState = (TestMemoryState) savePoint.state();
         assertEquals(TestMemoryState.class, savedState.getClass());
         assertEquals(42, savedState.getValue());
+    }
+
+
+    @Test
+    void shouldStoreSavePointWhenNodeCallsToSaveAndThenThrowsException() {
+        InMemoryGraphMemory memory = new InMemoryGraphMemory();
+
+        Node<TestMemoryState> start = node("start", s -> s.setValue(1));
+        Node<TestMemoryState> saveAndFail = node("save-and-fail", s -> {
+            s.setValue(s.getValue() + 41);
+            s.getTrace().add("save-and-fail");
+            s.toSave();
+            throw new IllegalStateException("failed after toSave");
+        });
+
+        GraphDefinitionBuilder<TestMemoryState> graph = new GraphBuilderDefault<TestMemoryState>()
+                .options(options("memory-save-before-exception"))
+                .memory(memory)
+                .begin(start);
+
+        graph.from(start)
+                .defaultTo(saveAndFail);
+
+        graph.end(saveAndFail);
+
+        GraphExecutor<TestMemoryState> executor = graph.done();
+
+        boolean exceptionSuppressed = false;
+        try {
+            executor.execute(new TestMemoryState(), "session-save-before-exception");
+        } catch (IllegalStateException ignored) {
+            exceptionSuppressed = true;
+            // Suppress the expected node exception to verify that the save point was written in finally.
+        }
+
+        assertTrue(exceptionSuppressed);
+        var savePoint = memory.get("memory-save-before-exception", "session-save-before-exception").orElseThrow();
+
+        assertEquals("memory-save-before-exception", savePoint.graphName());
+        assertEquals("save-and-fail", savePoint.nodeName());
+        assertEquals("session-save-before-exception", savePoint.sessionId());
+        TestMemoryState savedState = (TestMemoryState) savePoint.state();
+        assertEquals(TestMemoryState.class, savedState.getClass());
+        assertEquals(42, savedState.getValue());
+        assertEquals(List.of("save-and-fail"), savedState.getTrace());
     }
 
     @Test
