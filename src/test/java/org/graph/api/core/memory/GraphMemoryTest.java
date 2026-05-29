@@ -54,15 +54,6 @@ class GraphMemoryTest {
 
         GraphExecutor<TestMemoryState> executor = graph.done();
 
-
-//        GraphExecutor<TestMemoryState> executor = new GraphSpecification<TestMemoryState>()
-//                .options(options("memory-resume"))
-//                .memory(memory)
-//                .begin(start)
-//                .route(start, checkpoint)
-//                .route(checkpoint, finish)
-//                .end(finish);
-
         TestMemoryState first = new TestMemoryState();
         TestMemoryState interrupted = executor.execute(first, "session-a");
 
@@ -109,14 +100,6 @@ class GraphMemoryTest {
         graph.end(finish);
 
         GraphExecutor<TestMemoryState> executor = graph.done();
-
-//        GraphExecutor<TestMemoryState> executor = new GraphSpecification<TestMemoryState>()
-//                .options(options("memory-save-check"))
-//                .memory(memory)
-//                .begin(start)
-//                .route(start, saveHere)
-//                .route(saveHere, finish)
-//                .end(finish);
 
         TestMemoryState result = executor.execute(new TestMemoryState(), "session-save");
 
