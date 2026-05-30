@@ -8,7 +8,7 @@ public abstract class GraphState extends NodeInvocationState {
 
     private transient ExecutorStatus executorStatus;
     private String sessionId;
-    private final UUID executionId = UUID.randomUUID();
+    private transient final UUID executionId = UUID.randomUUID();
 
     public final UUID getExecutionId() {
         return executionId;
