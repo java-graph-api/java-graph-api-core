@@ -1,4 +1,8 @@
 package org.graph.api.core.node;
 
-public record NodeInfo(String name, int invocationLimit) {
+public record NodeInfo(
+        String name,
+        int invocationLimit,
+        boolean isAlwaysSaved
+) {
 }
