@@ -15,4 +15,8 @@ public interface Node<S extends GraphState> {
     default int invocationLimit() {
         return 0;
     }
+
+    default boolean isAlwaysSaved() {
+        return false;
+    }
 }

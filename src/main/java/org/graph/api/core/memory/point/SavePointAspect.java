@@ -22,7 +22,7 @@ public class SavePointAspect implements NodeAspect<GraphState> {
             NodeAspect.super.around(processingJoinPoint);
         } finally {
             var state = (SavePointState) processingJoinPoint.getState();
-            if (state.isSave()) {
+            if (state.isSave() || processingJoinPoint.getNodeInfo().isAlwaysSaved()) {
                 ensureGraphMemory();
                 String nodeName = state.getSaveNodeName() == null
                         ? processingJoinPoint.getCurrentNodeName()
