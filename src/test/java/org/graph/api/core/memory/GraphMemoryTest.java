@@ -160,6 +160,38 @@ class GraphMemoryTest {
     }
 
     @Test
+    void shouldStoreSavePointWhenNodeIsAlwaysSavedWithoutToSaveCall() {
+        InMemoryGraphMemory memory = new InMemoryGraphMemory();
+
+        Node<TestMemoryState> alwaysSaved = alwaysSavedNode("always-saved", s -> {
+            s.setValue(42);
+            s.getTrace().add("always-saved");
+        });
+
+        GraphDefinitionBuilder<TestMemoryState> graph = new GraphBuilderDefault<TestMemoryState>()
+                .options(options("memory-always-saved"))
+                .memory(memory)
+                .begin(alwaysSaved);
+
+        graph.end(alwaysSaved);
+
+        GraphExecutor<TestMemoryState> executor = graph.done();
+
+        TestMemoryState result = executor.execute(new TestMemoryState(), "session-always-saved");
+
+        assertEquals(ExecutorStatus.COMPLETED, result.getExecutorStatus());
+        var savePoint = memory.get("memory-always-saved", "session-always-saved").orElseThrow();
+
+        assertEquals("memory-always-saved", savePoint.graphName());
+        assertEquals("always-saved", savePoint.nodeName());
+        assertEquals("session-always-saved", savePoint.sessionId());
+        TestMemoryState savedState = (TestMemoryState) savePoint.state();
+        assertEquals(TestMemoryState.class, savedState.getClass());
+        assertEquals(42, savedState.getValue());
+        assertEquals(List.of("always-saved"), savedState.getTrace());
+    }
+
+    @Test
     void shouldKeepSessionsIsolatedInMemory() {
         InMemoryGraphMemory memory = new InMemoryGraphMemory();
 
@@ -215,15 +247,26 @@ class GraphMemoryTest {
         return new TestNode<>(name, action);
     }
 
+    private static <S extends GraphState> Node<S> alwaysSavedNode(String name, Consumer<S> action) {
+        return new TestNode<>(name, action, true);
+    }
+
     private static final class TestNode<S extends GraphState> implements Node<S> {
 
         private final String name;
         private final Consumer<S> action;
         private final UUID id = UUID.randomUUID();
 
+        private final boolean alwaysSaved;
+
         private TestNode(String name, Consumer<S> action) {
+            this(name, action, false);
+        }
+
+        private TestNode(String name, Consumer<S> action, boolean alwaysSaved) {
             this.name = name;
             this.action = action;
+            this.alwaysSaved = alwaysSaved;
         }
 
         @Override
@@ -239,6 +282,11 @@ class GraphMemoryTest {
         @Override
         public UUID getId() {
             return id;
+        }
+
+        @Override
+        public boolean isAlwaysSaved() {
+            return alwaysSaved;
         }
     }
 
